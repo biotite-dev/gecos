@@ -1,4 +1,4 @@
-GeCoS
+Gecos
 =====
 
 Generated color schemes
