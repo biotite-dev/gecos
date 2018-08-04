@@ -37,6 +37,7 @@ setup(
     description = "Generated color schemes",
     long_description = long_description,
     author = "Patrick Kunzmann",
+    author_email = "padix.key@gmail.com",
     url = "",
     license = "BSD 3-Clause",
     classifiers = (
