@@ -58,7 +58,8 @@ setup(
     
     install_requires = ["biotite",
                         "numpy",
-                        "maplotlib"],
+                        "colormath",
+                        "matplotlib"],
     python_requires = ">=3.5",
     
     cmdclass = {"test": PyTestCommand},
