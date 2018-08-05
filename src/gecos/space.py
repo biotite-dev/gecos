@@ -29,6 +29,10 @@ class ColorSpace():
         return rgb
 
     @property
+    def space(self):
+        return self._space.copy()
+
+    @property
     def shape(self):
         return (256, 256)
     
