@@ -14,11 +14,11 @@
    viewBox="0 0 105.83333 105.83334"
    version="1.1"
    id="svg8"
-   inkscape:version="0.92.3 (unknown)"
-   sodipodi:docname="icon.svg"
-   inkscape:export-filename="/home/padix/data/coding/gecos/doc/static/assets/general/gecos_icon_32p.png"
-   inkscape:export-xdpi="7.6799998"
-   inkscape:export-ydpi="7.6799998">
+   inkscape:version="0.92.3 (2405546, 2018-03-11)"
+   sodipodi:docname="gecos_icon.svg"
+   inkscape:export-filename="/home/padix/data/coding/gecos/doc/static/assets/general/gecos_icon_64p.png"
+   inkscape:export-xdpi="15.36"
+   inkscape:export-ydpi="15.36">
   <defs
      id="defs2" />
   <sodipodi:namedview
@@ -29,16 +29,16 @@
      inkscape:pageopacity="0.0"
      inkscape:pageshadow="2"
      inkscape:zoom="0.98994949"
-     inkscape:cx="2.7147986"
-     inkscape:cy="272.43996"
+     inkscape:cx="-152.34362"
+     inkscape:cy="270.41965"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
      units="px"
-     inkscape:window-width="1920"
-     inkscape:window-height="1005"
+     inkscape:window-width="1680"
+     inkscape:window-height="1001"
      inkscape:window-x="0"
-     inkscape:window-y="1050"
+     inkscape:window-y="25"
      inkscape:window-maximized="1" />
   <metadata
      id="metadata5">
@@ -83,8 +83,8 @@
        id="path4573"
        inkscape:connector-curvature="0" />
     <path
-       style="fill:none;stroke:#000000;stroke-width:7.9375;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
-       d="M -2.6726952,259.84954 26.459683,249.69329"
+       style="fill:none;stroke:#000000;stroke-width:18.52083397;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="M -2.6726952,259.84954 27.796031,250.76237"
        id="path4575"
        inkscape:connector-curvature="0"
        sodipodi:nodetypes="cc" />
