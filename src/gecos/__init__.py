@@ -8,3 +8,4 @@ __author__ = "Patrick Kunzmann"
 from .colors import *
 from .space import *
 from .simulation import *
+from .file import *
