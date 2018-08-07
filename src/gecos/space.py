@@ -18,7 +18,7 @@ class ColorSpace():
         self._space[np.isnan(rgb).any(axis=-1)] = False
 
     def remove(self, mask):
-        self._space &= mask
+        self._space &= ~mask
     
     def get_rgb_matrix(self):
         rgb = np.full((256,256,3), np.nan)
@@ -35,6 +35,10 @@ class ColorSpace():
     @property
     def shape(self):
         return (256, 256)
+    
+    @property
+    def lab(self):
+        return self._lab.copy()
     
     @property
     def l(self):

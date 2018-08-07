@@ -13,7 +13,7 @@ class Result():
     
     @lightness.setter
     def lightness(self, val):
-        self._lightness= val
+        self._lightness = val
 
     @property
     def alphabet(self):
@@ -65,22 +65,22 @@ class Result():
 
 
 
-def generate_color_scheme(matrix, space, constraints=None, n_steps=60000,
-                          t_initial=10, t_final=0.01, ext_factor=1, seed=None):
+def generate_color_scheme(matrix, space, constraints=None, n_steps=100000,
+                          temp=(100, 0.1), step_size=(10,0.1),
+                          ext_factor=1, seed=None):
     
     def is_allowed(coord):
         nonlocal space
         return space[int(coord[0])+128, int(coord[1])+128]
     
-    def _move(coord):
+    def _move(coord, step):
         nonlocal space
-        factor = 1.0
-        new_coord = coord + (random.rand(*coord.shape)-0.5) * factor
+        new_coord = coord + (random.rand(*coord.shape)-0.5) * 2 * step
         # Resample coordinates for alphabet symbols
         # when outside of the allowed area
         for i in range(new_coord.shape[0]):
             while not is_allowed(new_coord[i]):
-                new_coord[i] = coord[i] + (random.rand(2)-0.5) * factor
+                new_coord[i] = coord[i] + (random.rand(2)-0.5) * step
         return new_coord
 
 
@@ -111,6 +111,8 @@ def generate_color_scheme(matrix, space, constraints=None, n_steps=60000,
     random.seed(seed=seed)
     result.seed = seed
 
+    a = space.a
+    b = space.b
     space = space.space
 
     if matrix.get_alphabet1() != matrix.get_alphabet2():
@@ -121,19 +123,28 @@ def generate_color_scheme(matrix, space, constraints=None, n_steps=60000,
     dist_opt = np.max(scores, axis=0) - scores
     mean_dist_opt = np.mean(dist_opt)
 
-    temps = np.logspace(np.log10(t_initial), np.log10(t_final), n_steps)
+    temps = np.logspace(np.log10(temp[0]), np.log10(temp[1]), n_steps)
+    steps = np.logspace(np.log10(
+        step_size[0]), np.log10(step_size[1]), n_steps
+    )
+
     potentials = np.zeros(n_steps)
+
     coord = np.zeros((len(alphabet), 2), dtype=float)
+    # Find a suitable start position
+    indices = np.nonzero(space)
+    start_coord = (a[indices[0][0]], b[indices[1][0]])
+    coord[:,:] = start_coord
     # Initial move to avoid error in _potential_function():
     # Without move, mean_vis_dist = 0 -> scale_factor = infinite
-    coord = _move(coord)
+    coord = _move(coord, 1)
     trajectory = np.zeros((n_steps, len(alphabet), 2), dtype=int)
 
     pot = _potential_function(coord)
     
     for i in range(n_steps):
         temp = temps[i]
-        new_coord = _move(coord)
+        new_coord = _move(coord, steps[i])
         new_pot = _potential_function(new_coord)
         if new_pot < pot:
             coord = new_coord
