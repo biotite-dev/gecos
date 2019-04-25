@@ -6,10 +6,6 @@ from setuptools import setup, find_packages
 from setuptools.command.test import test as TestCommand
 import sys
 import shlex
-import glob
-from os.path import join, abspath, dirname, normpath
-import fnmatch
-import os
 from src.gecos import __version__
 
 long_description = """
@@ -58,8 +54,7 @@ setup(
     
     install_requires = ["biotite",
                         "numpy",
-                        "colormath",
-                        "matplotlib"],
+                        "colormath"],
     python_requires = ">=3.5",
     
     cmdclass = {"test": PyTestCommand},

@@ -1,21 +1,28 @@
+from os.path import join, dirname, realpath
 import numpy as np
 from .colors import convert_lab_to_rgb
 
 
+SPACE_FILE_NAME = join(dirname(realpath(__file__)), "space.npy")
+
+
 class ColorSpace():
 
-    def __init__(self, lightness):
+    def __init__(self, lightness, file_name=None):
         if lightness < 0 or lightness > 100:
             raise ValueError(f"Lightness value of {lightness} is invalid")
-        self._lightness =lightness
+        if file_name is None:
+            file_name = SPACE_FILE_NAME
+        
+        self._lightness = lightness
         self._ab_values = np.arange(-128,128)
-        self._space = np.ones((256,256), dtype=bool)
         self._lab = np.zeros((256,256,3))
         self._lab[:,:,0] = self._lightness
         self._lab[:,:,1] = np.repeat(self._ab_values[:, np.newaxis], 256, axis=-1)
         self._lab[:,:,2] = np.repeat(self._ab_values[np.newaxis, :], 256, axis= 0)
-        rgb = convert_lab_to_rgb(self._lab)
-        self._space[np.isnan(rgb).any(axis=-1)] = False
+
+        with open(file_name, "rb") as file:
+            self._space = np.load(file)[lightness]
 
     def remove(self, mask):
         self._space &= ~mask
@@ -41,16 +48,21 @@ class ColorSpace():
         return self._lab.copy()
     
     @property
-    def l(self):
+    def lightness(self):
         return self._lightness
-    
-    @property
-    def a(self):
-        return self._ab_values.copy()
-    
-    @property
-    def b(self):
-        return self._ab_values.copy()
 
-
+    @staticmethod
+    def _generate(file_name=None):
+        lab = np.zeros((100, 256, 256, 3), dtype=int)
+        lab[:,:,:,0] = np.arange(100      )[:, np.newaxis, np.newaxis]
+        lab[:,:,:,1] = np.arange(-128, 128)[np.newaxis, :, np.newaxis]
+        lab[:,:,:,2] = np.arange(-128, 128)[np.newaxis, np.newaxis, :]
         
+        rgb = convert_lab_to_rgb(lab)
+        space = np.ones((100, 256, 256), dtype=bool)
+        space[np.isnan(rgb).any(axis=-1)] = False
+        
+        if file_name is None:
+            file_name = SPACE_FILE_NAME
+        with open(file_name, "wb") as file:
+            np.save(file, space)
