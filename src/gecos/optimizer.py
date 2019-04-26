@@ -101,8 +101,8 @@ class ColorOptimizer(object):
         trajectory = np.zeros(
             (len(self._trajectory), len(self._alphabet), 3)
         )
-        trajectory[:, :, :2] = np.array(self._trajectory)
-        trajectory[:, :, 2 ] = self._lightness
+        trajectory[:, :, 0 ] = self._lightness
+        trajectory[:, :, 1:] = np.array(self._trajectory)
         return ColorOptimizer.Result(
             alphabet = self._alphabet,
             trajectory = trajectory,
