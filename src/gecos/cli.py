@@ -1,5 +1,6 @@
 import os
 import copy
+from concurrent.futures import ProcessPoolExecutor
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.colors import ListedColormap
@@ -57,7 +58,6 @@ def dialog():
             "(e.g. 'ACGT'):"
         )
         alphabet = process_input(parse_alphabet)
-    print(alphabet)
     
     print(
         "And now I need either the name of an NCBI substitution matrix "
@@ -95,23 +95,34 @@ def dialog():
             process_input(adjust_saturation)
 
     print(
-        "Now I will arrange the alphabet symbols for you."
+        "Now I will arrange the alphabet symbols for you. "
+        "This may take a while."
     )
     optimizer = ColorOptimizer(matrix, space)
     temps      = [100, 80, 60, 40, 20, 10, 8,   6,   4,   2,   1  ]
     step_sizes = [10,  8,  6,  4,  2,  1,  0.8, 0.6, 0.4, 0.2, 0.1]
-    for temp, step_size in zip(temps, step_sizes):
-        optimizer.optimize(1000, temp, step_size)
+    for temp, step_size in zip(temps, step_sizes): 
+        with ProcessPoolExecutor() as executor:
+            futures = [
+                executor.submit(
+                    optimize, copy.deepcopy(optimizer), 1000, temp, step_size
+                ) for _ in range(10)
+            ]
+            splitted_optimizers = [future.result() for future in futures]
+        pot = [opt.get_result().potential for opt in splitted_optimizers]
+        optimizer = splitted_optimizers[np.argmin(pot)]
     result = optimizer.get_result()
     print(
-        "This is the arrangement I found."
+        f"This is the scheme I found. "
+        f"It has a potential of {result.potential:.2f}."
     )
     show_results(space, result)
+    show_potential(result)
     
     print("How should the scheme be named (e.g. 'awesome_scheme')?")
     name = process_input()
     print(
-        "In which file do you like to save the color scheme "
+        "Where do you like to save the color scheme "
         "(e.g. 'scheme.json')?"
     )
     process_input(save_scheme)
@@ -166,7 +177,7 @@ def parse_alphabet(input):
         raise InputError("Alphabet may not contain whitespaces")
     try:
         return seq.LetterAlphabet(input)
-    except Exception as e:
+    except Exception:
         raise InputError("Invalid alphabet")
 
 def select_matrix(input):
@@ -231,6 +242,19 @@ def show_results(space, result):
     ax.set_xlabel("a")
     ax.set_ylabel("b")
     plt.show(block=False)
+
+def show_potential(result):
+    figure = plt.figure()
+    ax = figure.add_subplot(111)
+    ax.plot(result.potentials)
+    ax.set_xlabel("Step")
+    ax.set_ylabel("Potential")
+    plt.show(block=False)
+
+
+def optimize(optimizer, n_steps, temp, step_size):
+    optimizer.optimize(n_steps, temp, step_size)
+    return optimizer
 
 
 class InputError(Exception):
