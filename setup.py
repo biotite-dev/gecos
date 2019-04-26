@@ -51,11 +51,16 @@ setup(
     zip_safe = False,
     packages = find_packages("src"),
     package_dir = {"" : "src"},
+    entry_points = {
+        "console_scripts": [
+            "gecos = gecos.cli:main"
+        ]
+    },
     
     install_requires = ["biotite",
                         "numpy",
                         "colormath"],
-    python_requires = ">=3.5",
+    python_requires = ">=3.6",
     
     cmdclass = {"test": PyTestCommand},
     tests_require = ["pytest"],
