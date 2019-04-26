@@ -39,6 +39,17 @@ class ColorOptimizer(object):
             raise ValueError("Substitution matrix must be symmetric")
         self._alphabet = matrix.get_alphabet1()
         distance_matrix = self.calculate_distace_matrix(matrix)
+
+        if constraints is None:
+            self._constraints = np.full((len(self._alphabet), 2), np.nan)
+        else:
+            for constraint in constraints:
+                if not np.isnan(constraint).any() and \
+                   not self._is_allowed(constraint):
+                    raise ValueError(
+                        f"Constraint {constraint} is outside the allowed space"
+                    )
+            self._constraints = constraints.copy()
         
         ### Potential parameters ###
         # Under optimal conditions the distances in the simulation
@@ -62,7 +73,8 @@ class ColorOptimizer(object):
         # Chose start position from allowed positions at random
         for i in range(start_coord.shape[0]):
             while not self._is_allowed(start_coord[i]):
-                start_coord[i] = random.rand(2) * (MAX_AB - MIN_AB) + MIN_AB
+                start_coord[i] = random.rand(2) * (MAX_AB-MIN_AB) + MIN_AB
+        self._apply_constraints(start_coord)
         self._set_coordinates(start_coord)
 
     def set_coordinates(self, coord):
@@ -71,10 +83,17 @@ class ColorOptimizer(object):
                 f"Given shape is {coord.shape}, "
                 f"but expected shape is {(len(self._alphabet), 2)}"
             )
-        self._set_coordinates(coord.copy())
+        for c in coord:
+            if not self._is_allowed(c):
+                raise ValueError(
+                    f"Coordinates {c} are outside the allowed space"
+                )
+        coord = coord.copy()
+        self._apply_constraints(coord)
+        self._set_coordinates(coord)
     
     def _set_coordinates(self, coord, potential=None):
-        self._coord = coord.copy()
+        self._coord = coord
         self._trajectory.append(coord)
         if potential is None:
             potential = self._potential_function(coord)
@@ -121,12 +140,17 @@ class ColorOptimizer(object):
     
     def _move(self, coord, step):
         new_coord = coord + (random.rand(*coord.shape)-0.5) * 2 * step
+        self._apply_constraints(new_coord)
         # Resample coordinates for alphabet symbols
         # when outside of the allowed area
         for i in range(new_coord.shape[0]):
             while not self._is_allowed(new_coord[i]):
                 new_coord[i] = coord[i] + (random.rand(2)-0.5) * 2 * step
         return new_coord
+    
+    def _apply_constraints(self, coord):
+        mask = ~(np.isnan(self._constraints).any(axis=-1))
+        coord[mask] = self._constraints[mask]
 
     def _potential_function(self, coord):
         vis_dist = np.sqrt(
