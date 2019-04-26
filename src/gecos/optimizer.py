@@ -110,7 +110,14 @@ class ColorOptimizer(object):
         )
     
     def _is_allowed(self, coord):
-        return self._space[int(coord[0])+128, int(coord[1])+128]
+        # Add sign to ensure the corresponding integer value
+        # has an absolute value at least as high as the floating value
+        # This ensures that no unallowed values
+        # are classified as allowed
+        return self._space[
+            int(coord[0] + np.sign(coord[0])) + 128,
+            int(coord[1] + np.sign(coord[1])) + 128
+        ]
     
     def _move(self, coord, step):
         new_coord = coord + (random.rand(*coord.shape)-0.5) * 2 * step
