@@ -41,15 +41,15 @@ def main(args=None):
     )
     
     space_group  = parser.add_argument_group(
-        title="Color space",
+        title="Color space arguments",
         description=None
     )
     matrix_group = parser.add_argument_group(
-        title="Substitution matrix",
+        title="Substitution matrix arguments",
         description=None
     )
     opt_group = parser.add_argument_group(
-        title="Visual distance optimization",
+        title="Visual distance optimization arguments",
         description=None
     )
     output_group = parser.add_argument_group(
@@ -57,7 +57,7 @@ def main(args=None):
         description=None
     )
     vis_group    = parser.add_argument_group(
-        title="Visualization",
+        title="Visualization options",
         description=None
     )
 
@@ -95,6 +95,30 @@ def main(args=None):
              "(e.g. 'blosum62.mat'). "
              "Default: 'BLOSUM62'"
     )
+
+    opt_group.add_argument(
+        "--ext-factor", default=1, type=int,
+        help="The extension factor controls how strongly the symbols are "
+             "pushed to the edges of the color space. "
+             "At the minimum value '0' compactness is not penalized. "
+             "Default: 1"
+    )
+    opt_group.add_argument(
+        "--nsteps", default=15000, type=int,
+        help="The optimization process performs simulated annealing in order "
+             "to find the optimal conformation of the color scheme. "
+             "This parameter sets the total amount of optimization steps. "
+             "With a higher number of steps the quality of the optimization "
+             "increases at the cost of a longer runtime."
+             "Default: 15000"
+    )
+    opt_group.add_argument(
+        "--nparallel", default=10, type=int,
+        help="The amount of optimizers that search in parallel for the "
+             "optimal color scheme. "
+             "With a higher number of optimizers the quality of the "
+             "optimization increases at the cost of a longer runtime."
+    )
     
     output_group.add_argument(
         "--scheme-file", "-s",
@@ -120,7 +144,7 @@ def main(args=None):
     )
     vis_group.add_argument(
         "--show-scheme", action="store_true",
-        help="Show the distribution of alphabet symbol in the color space."
+        help="Show the distribution of alphabet symbols in the color space."
     )
     vis_group.add_argument(
         "--show-example", action="store_true",
@@ -145,17 +169,23 @@ def main(args=None):
         plt.show()
         sys.exit(0)
 
-    optimizer = ColorOptimizer(matrix, space)
+    optimizer = ColorOptimizer(matrix, space, extension_factor=args.ext_factor)
     temps      = [100, 80, 60, 40, 20, 10, 8,   6,   4,   2,   1  ]
     step_sizes = [10,  8,  6,  4,  2,  1,  0.8, 0.6, 0.4, 0.2, 0.1]
+    nparallel = args.nparallel
+    nsteps = int(args.nsteps / len(temps))
     for temp, step_size in zip(temps, step_sizes): 
         with ProcessPoolExecutor() as executor:
+            # Split the optimizer into multiple optimizers that perfrom
+            # in parallel
             futures = [
                 executor.submit(
-                    optimize, copy.deepcopy(optimizer), 1000, temp, step_size
-                ) for _ in range(10)
+                    optimize, copy.deepcopy(optimizer), nsteps, temp, step_size
+                ) for _ in range(nparallel)
             ]
             splitted_optimizers = [future.result() for future in futures]
+        # Proceed with the one of the splitted optimizers
+        # with the best potential in the end of optimization
         pot = [opt.get_result().potential for opt in splitted_optimizers]
         optimizer = splitted_optimizers[np.argmin(pot)]
     result = optimizer.get_result()
