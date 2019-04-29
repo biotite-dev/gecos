@@ -1,5 +1,7 @@
 import os
+import argparse
 import copy
+import sys
 from concurrent.futures import ProcessPoolExecutor
 import numpy as np
 import matplotlib.pyplot as plt
@@ -12,92 +14,134 @@ from .colors import convert_lab_to_rgb
 from .file import write_color_scheme
 
 
-alphabet = None
-matrix = None
-space = None
-optimizer = None
-result = None
-name = None
+def handle_error(func):
+    def wrapped(*args, **kwargs):
+        try:
+            func(*args, **kwargs)
+        except InputError as e:
+            print(e, file=sys.stderr)
+            sys.exit(1)
+        except Exception as e:
+            print("An unexpected error occured:\n", file=sys.stderr)
+            print(e, file=sys.stderr)
+            sys.exit(1)
+    return wrapped
 
-def main():
-    try:
-        dialog()
-    except Exception:
-        print()
-        print(
-            "Oops, something unexpected happened :( . "
-            "Here is the error traceback:"
-        )
-        print()
-        raise
 
-def dialog():
-    global alphabet
-    global matrix
-    global space
-    global optimizer
-    global result
-    global name
-    
-    print(
-        "Hello, this is Gecos, your friendly color scheme generator "
-        "for sequence alignments. "
-        "I will generate a color scheme for you, so that the visual "
-        "differences of the colors correspond to the distances in a "
-        "given substitution matrix. "
-    )
-    print()
-    
-    print(
-        "Do you would like to create a color scheme for protein alignments?"
-    )
-    alphabet = process_input(choose_alphabet, {"y":"yes", "n":"no"})
-    if alphabet is None:
-        print(
-            "Then please provide a custom alphabet to generate the scheme for "
-            "(e.g. 'ACGT'):"
-        )
-        alphabet = process_input(parse_alphabet)
-    
-    print(
-        "And now I need either the name of an NCBI substitution matrix "
-        "(e.g. 'BLOSUM62') or a custom file name (e.g. 'blosum62.mat'):"
-    )
-    matrix = process_input(select_matrix)
-    
-    accepted_lightness = False
-    accepted_space = False
-    while not accepted_space:
-        if not accepted_lightness:
-            print(
-                "Which lightness should the colors in the scheme have "
-                "(1 - 99)?"
-            )
-            space = process_input(create_space)
-            accepted_lightness = True
-        print(
-            "This is the color space I generated. "
-            "Do you like to change something?"
-        )
-        show_space(space)
-        mode = process_input(options={
-            "1":"accept", "2":"rebuild", "3":"limit saturation"
-        })
-        if mode == "accept":
-            accepted_space = True
-        elif mode == "rebuild":
-            accepted_lightness = False
-        elif mode == "limit saturation":
-            print(
-                "Please give the minimum and maximum saturation "
-                "(distance from center) of the color space (e.g. '25 - 50'):"
-            )
-            process_input(adjust_saturation)
+class InputError(Exception):
+    pass
 
-    print(
-        "Now I will arrange the alphabet symbols for you. "
-        "This may take a while."
+
+@handle_error
+def main(args=None):
+    parser = argparse.ArgumentParser(
+        description="This program automatically generates a color scheme for "
+                    "sequence alignments. "
+                    "The visual differences of the colors correspond to the "
+                    "distances in a given substitution matrix."
     )
+    
+    space_group  = parser.add_argument_group(
+        title="Color space",
+        description=None
+    )
+    matrix_group = parser.add_argument_group(
+        title="Substitution matrix",
+        description=None
+    )
+    opt_group = parser.add_argument_group(
+        title="Visual distance optimization",
+        description=None
+    )
+    output_group = parser.add_argument_group(
+        title="Output files",
+        description=None
+    )
+    vis_group    = parser.add_argument_group(
+        title="Visualization",
+        description=None
+    )
+
+    space_group.add_argument(
+        "--lightness", "-l", type=int, required=True,
+        help="The lightness (brightness) of the color space (1 - 99). "
+             "This argument must be provided."
+    )
+    space_group.add_argument(
+        "--dry-run", "-n", action="store_true",
+        help="Show only the customized color space and terminate the program."
+    )
+    space_group.add_argument("--smin", type=int,
+                             help="All colors in the space must "
+                                  "have the specified saturation at minimum "
+                                  "(a^2 + b^2 >= smin^2)."
+    )
+    space_group.add_argument("--smax", type=int,
+                             help="All colors in the space must "
+                                  "have the specified saturation at maximum "
+                                  "(a^2 + b^2 <= smax^2)."
+    )
+
+    matrix_group.add_argument(
+        "--alphabet", "-a",
+        help="A custom alphabet to generate the scheme for (e.g. 'ACGT'). "
+             "By default an alphabet containing the 20 amino acids is used. "
+    )
+    matrix_group.add_argument(
+        "--matrix", "-m", default="BLOSUM62",
+        help="The substitution matrix to calculate the pairwise symbol "
+             "distances from. "
+             "Can be an NCBI substitution matrix name (e.g. 'BLOSUM62') or "
+             "alternatively a substitution matrix file in NCBI format "
+             "(e.g. 'blosum62.mat'). "
+             "Default: 'BLOSUM62'"
+    )
+    
+    output_group.add_argument(
+        "--scheme-file", "-s",
+        type=argparse.FileType(mode="w"), default=sys.stdout,
+        help="Write the generated color scheme into the specified file. "
+             "The scheme is saved as Biotite-compatible JSON file. "
+             "By default the scheme is output to STDOUT."
+    )
+    output_group.add_argument(
+        "--name", default="scheme",
+        help="The name of the color scheme that is used in the JSON file".
+    )
+    output_group.add_argument(
+        "--pot-file", "-p", type=argparse.FileType(mode="w"),
+        help="Write the potentials during the color scheme optimization "
+             "into the specified file. "
+             "Each line corresponds to one optimization step."
+    )
+
+    vis_group.add_argument(
+        "--show-space", action="store_true",
+        help="Show the generated color space."
+    )
+    vis_group.add_argument(
+        "--show-scheme", action="store_true",
+        help="Show the distribution of alphabet symbol in the color space."
+    )
+    vis_group.add_argument(
+        "--show-example", action="store_true",
+        help="Show an example multiple sequence alignment "
+             "with newly generated color space."
+    )
+    vis_group.add_argument(
+        "--show-pot", action="store_true",
+        help="Show a plot of the potential during the optimization process."
+    )
+
+    args = parser.parse_args(args=args)
+
+
+    alphabet = parse_alphabet(args.alphabet)
+    matrix = parse_matrix(args.matrix)
+    
+    space = create_space(args.lightness)
+    adjust_saturation(space, args.smin, args.smax)
+
     optimizer = ColorOptimizer(matrix, space)
     temps      = [100, 80, 60, 40, 20, 10, 8,   6,   4,   2,   1  ]
     step_sizes = [10,  8,  6,  4,  2,  1,  0.8, 0.6, 0.4, 0.2, 0.1]
@@ -112,112 +156,67 @@ def dialog():
         pot = [opt.get_result().potential for opt in splitted_optimizers]
         optimizer = splitted_optimizers[np.argmin(pot)]
     result = optimizer.get_result()
-    print(
-        f"This is the scheme I found. "
-        f"It has a potential of {result.potential:.2f}."
-    )
-    show_results(space, result)
-    show_potential(result)
-    
-    print("How should the scheme be named (e.g. 'awesome_scheme')?")
-    name = process_input()
-    print(
-        "Where do you like to save the color scheme "
-        "(e.g. 'scheme.json')?"
-    )
-    process_input(save_scheme)
-    print(
-        "I saved your color scheme. Good bye!"
-    )
+
+    write_scheme(args.scheme_file, result, args.name)
+    if args.pot_file:
+        write_potential(args.pot_file, result)
+
+    if args.show_space:
+        show_space(space)
+    if args.show_scheme:
+        show_scheme(space, result)
+    if args.show_example:
+        show_example(result)
+    if args.show_pot:
+        show_potential(result)
 
 
-def process_input(parse_function=None, options=None):
-    while True:
-        if options is not None:
-            options_str = "["
-            for option, value in options.items():
-                options_str += option + ": " + value + ", "
-            # Remove terminal comma
-            options_str = options_str[:-2]
-            options_str += "]"
-            print(options_str)
-        
-        print("> ", end="")
-        inp = input().strip().expandtabs(4)
-        if len(inp) == 0:
-            continue
-
-        if options is not None:
-            try:
-                inp = options[inp.lower()]
-            except KeyError:
-                print("Please choose a proper option:")
-                continue
-
-        if parse_function is not None:
-            try:
-                return parse_function(inp)
-            except InputError as e:
-                print(str(e) + ".")
-                print("Try again:")
-        else:
-            return inp
-
-
-def choose_alphabet(input):
-    if input == "yes":
+def parse_alphabet(alphabet_str):
+    if alphabet_str is None:
         return seq.LetterAlphabet(
             seq.ProteinSequence.alphabet.get_symbols()[:20]
         )
     else:
-        return None
+        if " " in alphabet_str:
+            raise InputError("Alphabet may not contain whitespaces")
+        try:
+            return seq.LetterAlphabet(input)
+        except Exception:
+            raise InputError("Invalid alphabet")
 
-def parse_alphabet(input):
-    if " " in input:
-        raise InputError("Alphabet may not contain whitespaces")
-    try:
-        return seq.LetterAlphabet(input)
-    except Exception:
-        raise InputError("Invalid alphabet")
-
-def select_matrix(input):
-    if os.path.isfile(input):
-        with open(input) as f:
+def parse_matrix(matrix_str):
+    if os.path.isfile(matrix_str):
+        with open(matrix_str) as f:
             matrix_dict = align.SubstitutionMatrix.dict_from_str(f.read())
             return align.SubstitutionMatrix(alphabet, alphabet, matrix_dict)
     else:
-        # Input is a NCBI matrix name
-        input = input.upper()
-        if input not in align.SubstitutionMatrix.list_db():
+        # String is a NCBI matrix name
+        upper_matrix_str = matrix_str.upper()
+        if upper_matrix_str not in align.SubstitutionMatrix.list_db():
             raise InputError(
-                f"'{input}' is neither a file "
+                f"'{matrix_str}' is neither a file "
                 f"nor a valid NCBI substitution matrix"
             )
-        return align.SubstitutionMatrix(alphabet, alphabet, input)
+        return align.SubstitutionMatrix(alphabet, alphabet, upper_matrix_str)
 
-def create_space(input):
-    try:
-        lightness = int(input)
-    except ValueError:
-        raise InputError("Value is not an integer")
+
+def create_space(lightness):
     if lightness < 1 or lightness > 99:
-        raise InputError("Value must be between 1 and 99") 
+        raise InputError("Lightness value must be between 1 and 99") 
     return ColorSpace(lightness)
 
-def adjust_saturation(input):
-    global space
-    try:
-        min, max = input.split("-")
-        min, max = int(min), int(max)
-    except ValueError:
-        raise InputError("The range is invalid")
-    a = space.lab[:,:,1]
-    b = space.lab[:,:,2]
-    space.remove((a**2 + b**2 < min**2))
-    space.remove((a**2 + b**2 > max**2))
+def adjust_saturation(space, smin, smax):
+    if smin is not None:
+        space.remove((a**2 + b**2 < smin**2))
+    if smax is not None:
+        space.remove((a**2 + b**2 > smax**2))
 
-def save_scheme(input):
-    write_color_scheme(input, result, name)
+
+def write_scheme(file, result, name):
+    write_color_scheme(file, result, name)
+
+def write_potential(file, result):
+    np.savetxt(file, result.potentials)
 
 
 def show_space(space):
@@ -231,7 +230,7 @@ def show_space(space):
     ax.set_ylabel("b")
     plt.show(block=False)
 
-def show_results(space, result):
+def show_scheme(space, result):
     figure = plt.figure()
     ax = figure.add_subplot(111)
     ax.matshow(space.space.T, extent=(-128, 127,-128, 127),
@@ -242,6 +241,9 @@ def show_results(space, result):
     ax.set_xlabel("a")
     ax.set_ylabel("b")
     plt.show(block=False)
+
+def show_example(result):
+    pass
 
 def show_potential(result):
     figure = plt.figure()
@@ -255,7 +257,3 @@ def show_potential(result):
 def optimize(optimizer, n_steps, temp, step_size):
     optimizer.optimize(n_steps, temp, step_size)
     return optimizer
-
-
-class InputError(Exception):
-    pass
