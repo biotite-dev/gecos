@@ -23,8 +23,7 @@ def handle_error(func):
             sys.exit(1)
         except Exception as e:
             print("An unexpected error occured:\n", file=sys.stderr)
-            print(e, file=sys.stderr)
-            sys.exit(1)
+            raise
     return wrapped
 
 
@@ -106,7 +105,7 @@ def main(args=None):
     )
     output_group.add_argument(
         "--name", default="scheme",
-        help="The name of the color scheme that is used in the JSON file".
+        help="The name of the color scheme that is used in the JSON file."
     )
     output_group.add_argument(
         "--pot-file", "-p", type=argparse.FileType(mode="w"),
@@ -137,10 +136,14 @@ def main(args=None):
 
 
     alphabet = parse_alphabet(args.alphabet)
-    matrix = parse_matrix(args.matrix)
+    matrix = parse_matrix(args.matrix, alphabet)
     
     space = create_space(args.lightness)
     adjust_saturation(space, args.smin, args.smax)
+    if args.dry_run:
+        show_space(space)
+        plt.show()
+        sys.exit(0)
 
     optimizer = ColorOptimizer(matrix, space)
     temps      = [100, 80, 60, 40, 20, 10, 8,   6,   4,   2,   1  ]
@@ -169,6 +172,7 @@ def main(args=None):
         show_example(result)
     if args.show_pot:
         show_potential(result)
+    plt.show()
 
 
 def parse_alphabet(alphabet_str):
@@ -184,7 +188,7 @@ def parse_alphabet(alphabet_str):
         except Exception:
             raise InputError("Invalid alphabet")
 
-def parse_matrix(matrix_str):
+def parse_matrix(matrix_str, alphabet):
     if os.path.isfile(matrix_str):
         with open(matrix_str) as f:
             matrix_dict = align.SubstitutionMatrix.dict_from_str(f.read())
@@ -206,6 +210,9 @@ def create_space(lightness):
     return ColorSpace(lightness)
 
 def adjust_saturation(space, smin, smax):
+    lab = space.lab
+    a = lab[:,:,1]
+    b = lab[:,:,2]
     if smin is not None:
         space.remove((a**2 + b**2 < smin**2))
     if smax is not None:
@@ -216,7 +223,7 @@ def write_scheme(file, result, name):
     write_color_scheme(file, result, name)
 
 def write_potential(file, result):
-    np.savetxt(file, result.potentials)
+    np.savetxt(file, result.potentials, fmt="%.2f")
 
 
 def show_space(space):
@@ -228,7 +235,6 @@ def show_space(space):
                 extent=(-128, 127,-128, 127), aspect="equal")
     ax.set_xlabel("a")
     ax.set_ylabel("b")
-    plt.show(block=False)
 
 def show_scheme(space, result):
     figure = plt.figure()
@@ -240,7 +246,6 @@ def show_scheme(space, result):
                 ha="center", va="center", size=14, weight="heavy")
     ax.set_xlabel("a")
     ax.set_ylabel("b")
-    plt.show(block=False)
 
 def show_example(result):
     pass
@@ -251,7 +256,6 @@ def show_potential(result):
     ax.plot(result.potentials)
     ax.set_xlabel("Step")
     ax.set_ylabel("Potential")
-    plt.show(block=False)
 
 
 def optimize(optimizer, n_steps, temp, step_size):
