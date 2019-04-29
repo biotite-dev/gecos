@@ -104,6 +104,14 @@ def main(args=None):
              "Default: 1"
     )
     opt_group.add_argument(
+        "--constraint", "-c", nargs=3, action="append",
+        help="Constrain a symbol to a fixed position in color space. "
+             "This argument takes three values: a symbol, "
+             "the 'a*' color channel and the 'b*' color channel "
+             "(e.g. 'A 10 15')."
+             "Can be repeated to add constraints for multiple symbols."
+    )
+    opt_group.add_argument(
         "--nsteps", default=15000, type=int,
         help="The optimization process performs simulated annealing in order "
              "to find the optimal conformation of the color scheme. "
@@ -169,7 +177,11 @@ def main(args=None):
         plt.show()
         sys.exit(0)
 
-    optimizer = ColorOptimizer(matrix, space, extension_factor=args.ext_factor)
+    constraints = np.full((len(alphabet), 2), np.nan)
+    if args.constraint is not None:
+        for symbol, a, b in args.constraint:
+            constraints[alphabet.encode(symbol)] = (a,b)
+    optimizer = ColorOptimizer(matrix, space, constraints, args.ext_factor)
     temps      = [100, 80, 60, 40, 20, 10, 8,   6,   4,   2,   1  ]
     step_sizes = [10,  8,  6,  4,  2,  1,  0.8, 0.6, 0.4, 0.2, 0.1]
     nparallel = args.nparallel
