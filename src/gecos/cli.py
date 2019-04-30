@@ -244,7 +244,7 @@ def parse_alphabet(alphabet_str):
         if " " in alphabet_str:
             raise InputError("Alphabet may not contain whitespaces")
         try:
-            return seq.LetterAlphabet(input)
+            return seq.LetterAlphabet(alphabet_str)
         except Exception:
             raise InputError("Invalid alphabet")
 
