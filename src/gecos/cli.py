@@ -80,6 +80,22 @@ def main(args=None):
                                   "have the specified saturation at maximum "
                                   "(a^2 + b^2 <= smax^2)."
     )
+    space_group.add_argument("--amin", type=int,
+                             help="All colors in the space must "
+                                  "have the specified 'a*' value at minimum."
+    )
+    space_group.add_argument("--amax", type=int,
+                             help="All colors in the space must "
+                                  "have the specified 'a*' value at maximum."
+    )
+    space_group.add_argument("--bmin", type=int,
+                             help="All colors in the space must "
+                                  "have the specified 'b*' value at minimum."
+    )
+    space_group.add_argument("--bmax", type=int,
+                             help="All colors in the space must "
+                                  "have the specified 'b*' value at maximum."
+    )
 
     matrix_group.add_argument(
         "--alphabet", "-a",
@@ -97,11 +113,11 @@ def main(args=None):
     )
 
     opt_group.add_argument(
-        "--ext-factor", default=1, type=int,
+        "--ext-factor", default=10, type=int,
         help="The extension factor controls how strongly the symbols are "
              "pushed to the edges of the color space. "
              "At the minimum value '0' compactness is not penalized. "
-             "Default: 1"
+             "Default: 10"
     )
     opt_group.add_argument(
         "--constraint", "-c", nargs=3, action="append",
@@ -172,6 +188,8 @@ def main(args=None):
     
     space = create_space(args.lightness)
     adjust_saturation(space, args.smin, args.smax)
+    adjust_a(space, args.amin, args.amax)
+    adjust_b(space, args.bmin, args.bmax)
     if args.dry_run:
         show_space(space)
         plt.show()
@@ -256,9 +274,25 @@ def adjust_saturation(space, smin, smax):
     a = lab[:,:,1]
     b = lab[:,:,2]
     if smin is not None:
-        space.remove((a**2 + b**2 < smin**2))
+        space.remove(a**2 + b**2 < smin**2)
     if smax is not None:
-        space.remove((a**2 + b**2 > smax**2))
+        space.remove(a**2 + b**2 > smax**2)
+
+def adjust_a(space, amin, amax):
+    lab = space.lab
+    a = lab[:,:,1]
+    if amin is not None:
+        space.remove(a < amin)
+    if amax is not None:
+        space.remove(a > amax)
+
+def adjust_b(space, bmin, bmax):
+    lab = space.lab
+    b = lab[:,:,2]
+    if bmin is not None:
+        space.remove(b < bmin)
+    if bmax is not None:
+        space.remove(b > bmax)
 
 
 def write_scheme(file, result, name):
