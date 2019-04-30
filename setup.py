@@ -56,6 +56,10 @@ setup(
             "gecos = gecos.cli:main"
         ]
     },
+
+    package_data = {
+        "gecos" : ["space.npy", "example_alignment.fasta"],
+    },
     
     install_requires = ["biotite",
                         "numpy",

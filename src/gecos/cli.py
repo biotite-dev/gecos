@@ -1,4 +1,5 @@
 import os
+from os.path import join, dirname, realpath, isfile
 import argparse
 import copy
 import sys
@@ -8,10 +9,16 @@ import matplotlib.pyplot as plt
 from matplotlib.colors import ListedColormap
 import biotite.sequence as seq
 import biotite.sequence.align as align
+import biotite.sequence.io.fasta as fasta
+import biotite.sequence.graphics as graphics
 from .space import ColorSpace
 from .optimizer import ColorOptimizer
 from .colors import convert_lab_to_rgb
 from .file import write_color_scheme
+
+
+EXAMPLE_FILE_NAME \
+    = join(dirname(realpath(__file__)), "example_alignment.fasta")
 
 
 def handle_error(func):
@@ -249,7 +256,7 @@ def parse_alphabet(alphabet_str):
             raise InputError("Invalid alphabet")
 
 def parse_matrix(matrix_str, alphabet):
-    if os.path.isfile(matrix_str):
+    if isfile(matrix_str):
         with open(matrix_str) as f:
             matrix_dict = align.SubstitutionMatrix.dict_from_str(f.read())
             return align.SubstitutionMatrix(alphabet, alphabet, matrix_dict)
@@ -324,7 +331,17 @@ def show_scheme(space, result):
     ax.set_ylabel("b")
 
 def show_example(result):
-    pass
+    fasta_file = fasta.FastaFile()
+    fasta_file.read(EXAMPLE_FILE_NAME)
+    alignment = fasta.get_alignment(fasta_file)
+
+    fig = plt.figure(figsize=(12.0, 2.5))
+    ax = fig.add_subplot(111)
+    graphics.plot_alignment_type_based(
+        ax, alignment, spacing=2.0, symbols_per_line=80,
+        color_scheme=result.rgb_colors
+    )
+    fig.tight_layout()
 
 def show_potential(result):
     figure = plt.figure()
