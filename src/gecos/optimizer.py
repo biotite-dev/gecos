@@ -28,7 +28,7 @@ class ColorOptimizer(object):
         def rgb_colors(self):
             return convert_lab_to_rgb(self.lab_colors)
     
-    def __init__(self, matrix, space, constraints=None, extension_factor=10):
+    def __init__(self, matrix, space, constraints=None, contrast=10):
         self._lightness = space.lightness
         self._space = space.space.copy()
         self._coord = None
@@ -59,9 +59,9 @@ class ColorOptimizer(object):
         # The average optimal distance is used to relate the visual
         # distances to the distances in the substitution matrix
         self._mean_dist_opt = np.mean(self._dist_opt)
-        # The extension factor is used to force a distribution in the
-        # complete color space
-        self._ext_factor = extension_factor
+        # The contrast factor is used to force a distribution into the
+        # edges of the color space
+        self._contrast = contrast
 
         ### Set initial conformation ###
         MIN_AB = -128
@@ -164,9 +164,9 @@ class ColorOptimizer(object):
         scale_factor = self._mean_dist_opt / mean_vis_dist
         # Harmonic potentials between each pair of symbols
         pot = (vis_dist*scale_factor - self._dist_opt)**2
-        # Extension term: Favours conformations
+        # Contrast term: Favours conformations
         # that take a large area of the color space
-        pot += self._ext_factor * scale_factor
+        pot += self._contrast * scale_factor
         return(np.sum(pot))
     
     @staticmethod

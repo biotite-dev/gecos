@@ -113,10 +113,10 @@ def main(args=None):
     )
 
     opt_group.add_argument(
-        "--ext-factor", default=10, type=int,
-        help="The extension factor controls how strongly the symbols are "
+        "--contrast", default=10, type=int,
+        help="The contrast factor controls how strongly the symbols are "
              "pushed to the edges of the color space. "
-             "At the minimum value '0' compactness is not penalized. "
+             "At the minimum value '0' contrast is not rewarded. "
              "Default: 10"
     )
     opt_group.add_argument(
@@ -199,7 +199,7 @@ def main(args=None):
     if args.constraint is not None:
         for symbol, a, b in args.constraint:
             constraints[alphabet.encode(symbol)] = (a,b)
-    optimizer = ColorOptimizer(matrix, space, constraints, args.ext_factor)
+    optimizer = ColorOptimizer(matrix, space, constraints, args.contrast)
     temps      = [100, 80, 60, 40, 20, 10, 8,   6,   4,   2,   1  ]
     step_sizes = [10,  8,  6,  4,  2,  1,  0.8, 0.6, 0.4, 0.2, 0.1]
     nparallel = args.nparallel
