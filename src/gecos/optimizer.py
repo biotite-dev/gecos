@@ -28,7 +28,7 @@ class ColorOptimizer(object):
         def rgb_colors(self):
             return convert_lab_to_rgb(self.lab_colors)
     
-    def __init__(self, matrix, space, constraints=None, extension_factor=1):
+    def __init__(self, matrix, space, constraints=None, extension_factor=10):
         self._lightness = space.lightness
         self._space = space.space.copy()
         self._coord = None
