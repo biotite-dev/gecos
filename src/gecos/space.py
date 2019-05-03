@@ -1,4 +1,5 @@
 from os.path import join, dirname, realpath
+import itertools
 import numpy as np
 from .colors import convert_lab_to_rgb
 
@@ -8,31 +9,30 @@ SPACE_FILE_NAME = join(dirname(realpath(__file__)), "space.npy")
 
 class ColorSpace():
 
-    def __init__(self, lightness, file_name=None):
-        if lightness < 0 or lightness > 100:
-            raise ValueError(f"Lightness value of {lightness} is invalid")
+    def __init__(self, file_name=None):
         if file_name is None:
             file_name = SPACE_FILE_NAME
         
-        self._lightness = lightness
-        self._ab_values = np.arange(-128,128)
-        self._lab = np.zeros((256,256,3))
-        self._lab[:,:,0] = self._lightness
-        self._lab[:,:,1] = np.repeat(self._ab_values[:, np.newaxis], 256, axis=-1)
-        self._lab[:,:,2] = np.repeat(self._ab_values[np.newaxis, :], 256, axis= 0)
+        l = np.arange(100)
+        a = b = np.arange(-128,128)
+        self._lab = np.zeros((100,256,256,3), dtype=int)
+        self._lab[:,:,:,0] = l[:, np.newaxis, np.newaxis]
+        self._lab[:,:,:,1] = a[np.newaxis, :, np.newaxis]
+        self._lab[:,:,:,2] = b[np.newaxis, np.newaxis, :]
 
         with open(file_name, "rb") as file:
-            self._space = np.load(file)[lightness]
+            self._space = np.load(file)
 
     def remove(self, mask):
         self._space &= ~mask
     
     def get_rgb_matrix(self):
-        rgb = np.full((256,256,3), np.nan)
+        rgb = np.full(self._lab.shape, np.nan)
         for i in range(self._lab.shape[0]):
-            for j in range(self._lab.shape[1]):
-                if self._space[i,j]:
-                    rgb[i,j] = convert_lab_to_rgb(self._lab[i,j])
+            for j in range(self._lab.shape[0]):
+                for k in range(self._lab.shape[1]):
+                    if self._space[i,j,k]:
+                        rgb[i,j,k] = convert_lab_to_rgb(self._lab[i,j,k])
         return rgb
 
     @property
@@ -46,10 +46,6 @@ class ColorSpace():
     @property
     def lab(self):
         return self._lab.copy()
-    
-    @property
-    def lightness(self):
-        return self._lightness
 
     @staticmethod
     def _generate(file_name=None):

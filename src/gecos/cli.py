@@ -69,11 +69,6 @@ def main(args=None):
     )
 
     space_group.add_argument(
-        "--lightness", "-l", type=int, required=True,
-        help="The lightness (brightness) of the color space (1 - 99). "
-             "This argument must be provided."
-    )
-    space_group.add_argument(
         "--dry-run", "-n", action="store_true",
         help="Show only the customized color space and terminate the program."
     )
@@ -86,6 +81,14 @@ def main(args=None):
                              help="All colors in the space must "
                                   "have the specified saturation at maximum "
                                   "(a^2 + b^2 <= smax^2)."
+    )
+    space_group.add_argument("--lmin", type=int,
+                             help="All colors in the space must "
+                                  "have the specified lightness at minimum."
+    )
+    space_group.add_argument("--lmax", type=int,
+                             help="All colors in the space must "
+                                  "have the specified lightness at maximum."
     )
     space_group.add_argument("--amin", type=int,
                              help="All colors in the space must "
@@ -193,8 +196,9 @@ def main(args=None):
     alphabet = parse_alphabet(args.alphabet)
     matrix = parse_matrix(args.matrix, alphabet)
     
-    space = create_space(args.lightness)
+    space = ColorSpace()
     adjust_saturation(space, args.smin, args.smax)
+    adjust_l(space, args.lmin, args.lmax)
     adjust_a(space, args.amin, args.amax)
     adjust_b(space, args.bmin, args.bmax)
     if args.dry_run:
@@ -202,7 +206,7 @@ def main(args=None):
         plt.show()
         sys.exit(0)
 
-    constraints = np.full((len(alphabet), 2), np.nan)
+    constraints = np.full((len(alphabet), 3), np.nan)
     if args.constraint is not None:
         for symbol, a, b in args.constraint:
             constraints[alphabet.encode(symbol)] = (a,b)
@@ -270,24 +274,26 @@ def parse_matrix(matrix_str, alphabet):
             )
         return align.SubstitutionMatrix(alphabet, alphabet, upper_matrix_str)
 
-
-def create_space(lightness):
-    if lightness < 1 or lightness > 99:
-        raise InputError("Lightness value must be between 1 and 99") 
-    return ColorSpace(lightness)
-
 def adjust_saturation(space, smin, smax):
     lab = space.lab
-    a = lab[:,:,1]
-    b = lab[:,:,2]
+    a = lab[..., 1]
+    b = lab[... ,2]
     if smin is not None:
         space.remove(a**2 + b**2 < smin**2)
     if smax is not None:
         space.remove(a**2 + b**2 > smax**2)
 
+def adjust_l(space, lmin, lmax):
+    lab = space.lab
+    l = lab[..., 0]
+    if lmin is not None:
+        space.remove(l < lmin)
+    if lmax is not None:
+        space.remove(l > lmax)
+
 def adjust_a(space, amin, amax):
     lab = space.lab
-    a = lab[:,:,1]
+    a = lab[..., 1]
     if amin is not None:
         space.remove(a < amin)
     if amax is not None:
@@ -295,7 +301,7 @@ def adjust_a(space, amin, amax):
 
 def adjust_b(space, bmin, bmax):
     lab = space.lab
-    b = lab[:,:,2]
+    b = lab[..., 2]
     if bmin is not None:
         space.remove(b < bmin)
     if bmax is not None:

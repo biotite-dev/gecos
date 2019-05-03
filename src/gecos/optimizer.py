@@ -7,6 +7,11 @@ import biotite.sequence.align as align
 from .colors import convert_lab_to_rgb
 
 
+MIN_L = 0
+MAX_L = 99
+MIN_AB = -128
+MAX_AB = 127
+
 
 class ColorOptimizer(object):
 
@@ -26,10 +31,9 @@ class ColorOptimizer(object):
         
         @property
         def rgb_colors(self):
-            return convert_lab_to_rgb(self.lab_colors)
+            return convert_lab_to_rgb(self.lab_colors.astype(int))
     
     def __init__(self, matrix, space, constraints=None, contrast=10):
-        self._lightness = space.lightness
         self._space = space.space.copy()
         self._coord = None
         self._trajectory = []
@@ -41,7 +45,7 @@ class ColorOptimizer(object):
         distance_matrix = self.calculate_distace_matrix(matrix)
 
         if constraints is None:
-            self._constraints = np.full((len(self._alphabet), 2), np.nan)
+            self._constraints = np.full((len(self._alphabet), 3), np.nan)
         else:
             for constraint in constraints:
                 if not np.isnan(constraint).any() and \
@@ -64,24 +68,25 @@ class ColorOptimizer(object):
         self._contrast = contrast
 
         ### Set initial conformation ###
-        MIN_AB = -128
-        MAX_AB = 127
-        # Every symbol has the 'a' and 'b' coordinates
+        # Every symbol has the 'l', 'a' and 'b' coordinates
         # The coordinates are initially filled with values
-        # that are guaranteed to be invalid
-        start_coord = np.full((len(self._alphabet), 2), MIN_AB-1, dtype=float)
+        # that are guaranteed to be invalid (l cannot be -1)
+        start_coord = np.full((len(self._alphabet), 3), -1, dtype=float)
         # Chose start position from allowed positions at random
         for i in range(start_coord.shape[0]):
             while not self._is_allowed(start_coord[i]):
-                start_coord[i] = random.rand(2) * (MAX_AB-MIN_AB) + MIN_AB
+                drawn_coord = random.rand(3)
+                drawn_coord[..., 0]  *= (MAX_L -MIN_L ) + MIN_L
+                drawn_coord[..., 1:] *= (MAX_AB-MIN_AB) + MIN_AB
+                start_coord[i] = drawn_coord
         self._apply_constraints(start_coord)
         self._set_coordinates(start_coord)
 
     def set_coordinates(self, coord):
-        if coord.shape != (len(self._alphabet), 2):
+        if coord.shape != (len(self._alphabet), 3):
             raise ValueError(
                 f"Given shape is {coord.shape}, "
-                f"but expected shape is {(len(self._alphabet), 2)}"
+                f"but expected shape is {(len(self._alphabet), 3)}"
             )
         for c in coord:
             if not self._is_allowed(c):
@@ -117,11 +122,7 @@ class ColorOptimizer(object):
                     self._set_coordinates(self._coord, new_pot)
 
     def get_result(self):
-        trajectory = np.zeros(
-            (len(self._trajectory), len(self._alphabet), 3)
-        )
-        trajectory[:, :, 0 ] = self._lightness
-        trajectory[:, :, 1:] = np.array(self._trajectory)
+        trajectory = np.array(self._trajectory)
         return ColorOptimizer.Result(
             alphabet = self._alphabet,
             trajectory = trajectory,
@@ -129,13 +130,18 @@ class ColorOptimizer(object):
         )
     
     def _is_allowed(self, coord):
+        if coord[0] < MIN_L  or coord[0] > MAX_L  or \
+           coord[1] < MIN_AB or coord[1] > MAX_AB or \
+           coord[2] < MIN_AB or coord[2] > MAX_AB:
+                return False
         # Add sign to ensure the corresponding integer value
         # has an absolute value at least as high as the floating value
         # This ensures that no unallowed values
         # are classified as allowed
         return self._space[
-            int(coord[0] + np.sign(coord[0])) + 128,
-            int(coord[1] + np.sign(coord[1])) + 128
+            int(coord[0]) - MIN_L,
+            int(coord[1]) - MIN_AB,
+            int(coord[2]) - MIN_AB,
         ]
     
     def _move(self, coord, step):
@@ -145,7 +151,7 @@ class ColorOptimizer(object):
         # when outside of the allowed area
         for i in range(new_coord.shape[0]):
             while not self._is_allowed(new_coord[i]):
-                new_coord[i] = coord[i] + (random.rand(2)-0.5) * 2 * step
+                new_coord[i] = coord[i] + (random.rand(3)-0.5) * 2 * step
         return new_coord
     
     def _apply_constraints(self, coord):
