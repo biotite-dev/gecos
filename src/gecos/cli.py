@@ -268,7 +268,12 @@ def main(args=None):
     if args.show_scheme:
         show_scheme(space, result, lightness)
     if args.show_example:
-        if 
+        # Check whether a custom non-amino-acid alphabet is used
+        if args.alphabet is not None:
+            raise InputError(
+                "The example alignment can only be shown "
+                "for the amino acid alphabet"
+            )
         show_example(result)
     if args.show_pot:
         show_potential(result)
