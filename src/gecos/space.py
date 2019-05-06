@@ -26,11 +26,11 @@ class ColorSpace():
     def remove(self, mask):
         self._space &= ~mask
     
-    def get_rgb_matrix(self):
+    def get_rgb_space(self):
         rgb = np.full(self._lab.shape, np.nan)
         for i in range(self._lab.shape[0]):
-            for j in range(self._lab.shape[0]):
-                for k in range(self._lab.shape[1]):
+            for j in range(self._lab.shape[1]):
+                for k in range(self._lab.shape[2]):
                     if self._space[i,j,k]:
                         rgb[i,j,k] = convert_lab_to_rgb(self._lab[i,j,k])
         return rgb
