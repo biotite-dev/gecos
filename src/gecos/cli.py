@@ -43,8 +43,12 @@ def main(args=None):
     parser = argparse.ArgumentParser(
         description="This program automatically generates a color scheme for "
                     "sequence alignments. "
-                    "The visual differences of the colors correspond to the "
+                    "The perceptual color differences correspond to the "
                     "distances in a given substitution matrix."
+                    "\n"
+                    "The algorithm tries to find an optimal color scheme by "
+                    "means of color differences by performing a "
+                    "Metropolis-Monte-Carlo optimization in color space."
     )
     
     space_group  = parser.add_argument_group(
@@ -173,17 +177,33 @@ def main(args=None):
     )
 
     vis_group.add_argument(
+        "--lightness", type=int,
+        help="Set the lightness level for color space visualization. "
+             "The plots generated via the '--show-space' and the "
+             "'--show-scheme' options show the color space excerpt at the "
+             "given lightness level. "
+             "By default the mean of the minimum and maximum lightness of the "
+             "space is chosen."
+    )
+    vis_group.add_argument(
         "--show-space", action="store_true",
-        help="Show the generated color space."
+        help="Show the generated color space. "
+             "The lightness of the '--lightness' option is used here. "
+             "The gray area cannot be displayed in RGB space at the given "
+             "lightness."
     )
     vis_group.add_argument(
         "--show-scheme", action="store_true",
         help="Show the distribution of alphabet symbols in the color space."
+             "The lightness of the '--lightness' option is used here. "
+             "The gray area cannot be displayed in RGB space at the given "
+             "lightness."
     )
     vis_group.add_argument(
         "--show-example", action="store_true",
         help="Show an example multiple sequence alignment "
-             "with newly generated color space."
+             "with newly generated color space. "
+             "Cannot be used in combination with a custom '--alphabet' value."
     )
     vis_group.add_argument(
         "--show-pot", action="store_true",
@@ -196,13 +216,21 @@ def main(args=None):
     alphabet = parse_alphabet(args.alphabet)
     matrix = parse_matrix(args.matrix, alphabet)
     
+    # This lightness is only used fotr visualization purposes
+    if args.lightness is not None:
+        lightness = args.lightness
+    elif args.lmin is not None and args.lmax is not None:
+        lightness = (args.lmin + args.lmax) // 2
+    else:
+        lightness = 50
+
     space = ColorSpace()
     adjust_saturation(space, args.smin, args.smax)
     adjust_l(space, args.lmin, args.lmax)
     adjust_a(space, args.amin, args.amax)
     adjust_b(space, args.bmin, args.bmax)
     if args.dry_run:
-        show_space(space)
+        show_space(space, lightness)
         plt.show()
         sys.exit(0)
 
@@ -236,10 +264,11 @@ def main(args=None):
         write_potential(args.pot_file, result)
 
     if args.show_space:
-        show_space(space)
+        show_space(space, lightness)
     if args.show_scheme:
-        show_scheme(space, result)
+        show_scheme(space, result, lightness)
     if args.show_example:
+        if 
         show_example(result)
     if args.show_pot:
         show_potential(result)
@@ -315,26 +344,27 @@ def write_potential(file, result):
     np.savetxt(file, result.potentials, fmt="%.2f")
 
 
-def show_space(space):
+def show_space(space, lightness):
     figure = plt.figure()
     ax = figure.add_subplot(111)
-    rgb_matrix = space.get_rgb_matrix()
-    rgb_matrix[np.isnan(rgb_matrix)] = 0.7
-    ax.imshow(np.transpose(rgb_matrix, axes=(1,0,2)), origin="lower",
+    rgb_space = space.get_rgb_space()[lightness]
+    rgb_space[np.isnan(rgb_space)] = 0.7
+    ax.imshow(np.transpose(rgb_space, axes=(1,0,2)), origin="lower",
                 extent=(-128, 127,-128, 127), aspect="equal")
-    ax.set_xlabel("a")
-    ax.set_ylabel("b")
+    ax.set_xlabel("a*")
+    ax.set_ylabel("b*")
 
-def show_scheme(space, result):
+def show_scheme(space, result, lightness):
     figure = plt.figure()
     ax = figure.add_subplot(111)
-    ax.matshow(space.space.T, extent=(-128, 127,-128, 127),
+    s = space.space
+    ax.matshow(space.space[lightness].T, extent=(-128, 127,-128, 127),
                origin="lower", cmap=ListedColormap([(0.7,0.7,0.7), (1,1,1)]))
     for symbol, pos, color in zip(result.alphabet, result.coord, result.rgb_colors):
         ax.text(pos[1], pos[2], symbol, color=color,
                 ha="center", va="center", size=14, weight="heavy")
-    ax.set_xlabel("a")
-    ax.set_ylabel("b")
+    ax.set_xlabel("a*")
+    ax.set_ylabel("b*")
 
 def show_example(result):
     fasta_file = fasta.FastaFile()
