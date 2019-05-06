@@ -142,7 +142,7 @@ def main(args=None):
              "Can be repeated to add constraints for multiple symbols."
     )
     opt_group.add_argument(
-        "--nsteps", default=15000, type=int,
+        "--nsteps", default=20000, type=int,
         help="The optimization process performs simulated annealing in order "
              "to find the optimal conformation of the color scheme. "
              "This parameter sets the total amount of optimization steps. "
