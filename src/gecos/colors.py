@@ -1,3 +1,10 @@
+# This source code is part of the Gecos package and is distributed
+# under the 3-Clause BSD License. Please see 'LICENSE.rst' for further
+# information.
+
+__author__ = "Patrick Kunzmann"
+__all__ = ["convert_lab_to_rgb"]
+
 import numpy as np
 from colormath.color_objects import LabColor, XYZColor, sRGBColor
 from colormath.color_conversions import convert_color

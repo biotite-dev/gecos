@@ -1,3 +1,10 @@
+# This source code is part of the Gecos package and is distributed
+# under the 3-Clause BSD License. Please see 'LICENSE.rst' for further
+# information.
+
+__author__ = "Patrick Kunzmann"
+__all__ = ["ColorSpace"]
+
 from os.path import join, dirname, realpath
 import itertools
 import numpy as np
