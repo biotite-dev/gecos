@@ -3,7 +3,7 @@
 # information.
 
 __author__ = "Patrick Kunzmann"
-__all__ = [write_color_scheme]
+__all__ = ["write_color_scheme"]
 
 import json
 from matplotlib.colors import to_hex
