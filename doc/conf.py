@@ -69,5 +69,4 @@ html_theme_options = {
     "github_banner" : "true",
     "page_width"    : "85%",
     "fixed_sidebar" : "true"
-    
 }
