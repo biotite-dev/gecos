@@ -1,7 +1,7 @@
 BSD 3-Clause License
 --------------------
 
-Copyright 2018, Patrick Kunzmann
+Copyright 2019, Patrick Kunzmann
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
