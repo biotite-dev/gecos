@@ -134,11 +134,11 @@ def main(args=None):
              "Default: 10"
     )
     opt_group.add_argument(
-        "--constraint", "-c", nargs=3, action="append",
+        "--constraint", "-c", nargs=4, action="append",
         help="Constrain a symbol to a fixed position in color space. "
-             "This argument takes three values: a symbol, "
-             "the 'a*' color channel and the 'b*' color channel "
-             "(e.g. 'A 10 15')."
+             "This argument takes four values: a symbol, "
+             "and the color channels 'l*', 'a*' and 'b*'"
+             "(e.g. 'A 65 10 15')."
              "Can be repeated to add constraints for multiple symbols."
     )
     opt_group.add_argument(
@@ -236,8 +236,8 @@ def main(args=None):
 
     constraints = np.full((len(alphabet), 3), np.nan)
     if args.constraint is not None:
-        for symbol, a, b in args.constraint:
-            constraints[alphabet.encode(symbol)] = (a,b)
+        for symbol, l, a, b in args.constraint:
+            constraints[alphabet.encode(symbol)] = (l,a,b)
     optimizer = ColorOptimizer(matrix, space, constraints, args.contrast)
     temps      = [100, 80, 60, 40, 20, 10, 8,   6,   4,   2,   1  ]
     step_sizes = [10,  8,  6,  4,  2,  1,  0.8, 0.6, 0.4, 0.2, 0.1]
