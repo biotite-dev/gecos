@@ -30,9 +30,9 @@ An example alignment using the newly generated color scheme is displayed below.
 
 .. code-block:: console
    
-   $ gecos --lmin 60 --lmax 75 -s awesome_colors.json
+   $ gecos --matrix BLOSUM62 --lmin 60 --lmax 75 -s awesome_colors.json
 
-.. image:: /images/example_alignment.svg
+.. image:: /plots/main_example_alignment.png
 
 
 .. toctree::

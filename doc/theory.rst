@@ -8,8 +8,18 @@ Background
 Color spaces
 ------------
 
+The perceptual difference of two colors is approximately
+the euclidean distance
+
 Scoring function
 ----------------
+
+At first the selected substitution matrix is converted into a distance
+matrix.
+Then a harmonic potential applied all pairs of symbols with the  being the
+respective value from the distance matrix
+An additional *contrast potential* drives the symbol to the edges of the color
+space, thereby increasing the contrast.
 
 Optimzation
 -----------

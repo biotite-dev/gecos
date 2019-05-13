@@ -14,10 +14,25 @@ from importlib import import_module
 import types
 import abc
 
-absolute_path = dirname(realpath(__file__))
-package_path = join(dirname(absolute_path), "src")
+doc_path = dirname(realpath(__file__))
+# Include gecos/src in PYTHONPATH
+# in order to import the 'gecos' package
+package_path = join(dirname(doc_path), "src")
 sys.path.insert(0, package_path)
 import gecos
+# Include gecos/doc in PYTHONPATH
+# in order to import modules for plot genaration etc.
+sys.path.insert(0, doc_path)
+import plotgen
+
+
+### Plot generation ###
+
+#Reset matplotlib params
+matplotlib.rcdefaults()
+
+# Generate plots
+plotgen.generate(join(doc_path, "plots"))
 
 
 #### General ####
