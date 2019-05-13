@@ -111,9 +111,6 @@ class ColorOptimizer(object):
             potential = self._potential_function(coord)
         self._potentials.append(potential)
     
-    def set_seed(self, seed):
-        random.seed(seed=seed)
-    
     def optimize(self, n_steps, temp, step_size):
         for i in range(n_steps):
             pot = self._potentials[-1]
