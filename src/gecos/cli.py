@@ -358,6 +358,7 @@ def show_space(space, lightness):
                 extent=(-128, 127,-128, 127), aspect="equal")
     ax.set_xlabel("a*")
     ax.set_ylabel("b*")
+    figure.tight_layout()
 
 def show_scheme(space, result, lightness):
     figure = plt.figure()
@@ -370,6 +371,7 @@ def show_scheme(space, result, lightness):
                 ha="center", va="center", size=14, weight="heavy")
     ax.set_xlabel("a*")
     ax.set_ylabel("b*")
+    figure.tight_layout()
 
 def show_example(result):
     fasta_file = fasta.FastaFile()
@@ -390,6 +392,7 @@ def show_potential(result):
     ax.plot(result.potentials)
     ax.set_xlabel("Step")
     ax.set_ylabel("Potential")
+    figure.tight_layout()
 
 
 def optimize(optimizer, n_steps, temp, step_size):
