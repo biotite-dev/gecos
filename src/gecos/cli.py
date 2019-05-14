@@ -17,6 +17,7 @@ from .colors import convert_lab_to_rgb
 from .file import write_color_scheme
 
 
+FIGURE_WIDTH = 8.0
 EXAMPLE_FILE_NAME \
     = join(dirname(realpath(__file__)), "example_alignment.fasta")
 
@@ -230,9 +231,12 @@ def main(args=None):
     adjust_a(space, args.amin, args.amax)
     adjust_b(space, args.bmin, args.bmax)
     if args.dry_run:
-        show_space(space, lightness)
+        figure = plt.figure(figsize=(FIGURE_WIDTH, FIGURE_WIDTH))
+        ax = figure.gca()
+        show_space(ax, space, lightness)
+        figure.tight_layout()
         plt.show()
-        sys.exit(0)
+        return
 
     constraints = np.full((len(alphabet), 3), np.nan)
     if args.constraint is not None:
@@ -264,9 +268,15 @@ def main(args=None):
         write_potential(args.pot_file, result)
 
     if args.show_space:
-        show_space(space, lightness)
+        figure = plt.figure(figsize=(FIGURE_WIDTH, FIGURE_WIDTH))
+        ax = figure.gca()
+        show_space(ax, space, lightness)
+        figure.tight_layout()
     if args.show_scheme:
-        show_scheme(space, result, lightness)
+        figure = plt.figure(figsize=(FIGURE_WIDTH, FIGURE_WIDTH))
+        ax = figure.gca()
+        show_scheme(ax, space, result, lightness)
+        figure.tight_layout()
     if args.show_example:
         # Check whether a custom non-amino-acid alphabet is used
         if args.alphabet is not None:
@@ -274,9 +284,15 @@ def main(args=None):
                 "The example alignment can only be shown "
                 "for the amino acid alphabet"
             )
-        show_example(result)
+        figure = plt.figure(figsize=(FIGURE_WIDTH, 2.5))
+        ax = figure.gca()
+        show_example(ax, result.rgb_colors)
+        figure.tight_layout()
     if args.show_pot:
-        show_potential(result)
+        figure = plt.figure(figsize=(FIGURE_WIDTH, 6.0))
+        ax = figure.gca()
+        show_potential(ax, result.potentials)
+        figure.tight_layout()
     plt.show()
 
 
@@ -349,20 +365,22 @@ def write_potential(file, result):
     np.savetxt(file, result.potentials, fmt="%.2f")
 
 
-def show_space(space, lightness):
-    figure = plt.figure()
-    ax = figure.add_subplot(111)
+def show_space(ax, space, lightness):
+    # For performance reasons, filter correct lightness
+    # before converting to RGB 
+    l = space.lab[..., 0]
+    space = copy.deepcopy(space)
+    space.remove(l != lightness)
+    # Remove first dimension (length = 1)
     rgb_space = space.get_rgb_space()[lightness]
     rgb_space[np.isnan(rgb_space)] = 0.7
     ax.imshow(np.transpose(rgb_space, axes=(1,0,2)), origin="lower",
                 extent=(-128, 127,-128, 127), aspect="equal")
     ax.set_xlabel("a*")
     ax.set_ylabel("b*")
-    figure.tight_layout()
+    ax.set_title(f"L* = {lightness}")
 
-def show_scheme(space, result, lightness):
-    figure = plt.figure()
-    ax = figure.add_subplot(111)
+def show_scheme(ax, space, result, lightness):
     s = space.space
     ax.matshow(space.space[lightness].T, extent=(-128, 127,-128, 127),
                origin="lower", cmap=ListedColormap([(0.7,0.7,0.7), (1,1,1)]))
@@ -371,28 +389,23 @@ def show_scheme(space, result, lightness):
                 ha="center", va="center", size=14, weight="heavy")
     ax.set_xlabel("a*")
     ax.set_ylabel("b*")
-    figure.tight_layout()
+    ax.set_title(f"L* = {lightness}")
 
-def show_example(result):
+def show_example(ax, colors):
     fasta_file = fasta.FastaFile()
     fasta_file.read(EXAMPLE_FILE_NAME)
     alignment = fasta.get_alignment(fasta_file)
+    alignment = alignment[:60]
 
-    fig = plt.figure(figsize=(12.0, 2.5))
-    ax = fig.add_subplot(111)
     graphics.plot_alignment_type_based(
-        ax, alignment, spacing=2.0, symbols_per_line=80,
-        color_scheme=result.rgb_colors
+        ax, alignment, spacing=2.0, symbols_per_line=len(alignment),
+        color_scheme=colors
     )
-    fig.tight_layout()
 
-def show_potential(result):
-    figure = plt.figure()
-    ax = figure.add_subplot(111)
-    ax.plot(result.potentials)
+def show_potential(ax, potentials):
+    ax.plot(potentials)
     ax.set_xlabel("Step")
     ax.set_ylabel("Potential")
-    figure.tight_layout()
 
 
 def optimize(optimizer, n_steps, temp, step_size):

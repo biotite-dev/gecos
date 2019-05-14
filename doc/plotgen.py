@@ -20,15 +20,25 @@ DOC_PATH = dirname(realpath(__file__))
 
 plot_generators = {}
 
+def empty_func(*args, **kwargs):
+    pass 
+
 def generate(plot_directory_path):
+    # Overwrite 'plt.show()' to prevent matplotlib blocking the execution
+    show_func = plt.show()
+    plt.show = empty_func
+    # Create plot directory if not already existing
     if not isdir(plot_directory_path):
         mkdir(plot_directory_path)
+    # Run '@plot_generator' functions
     for plot_name, function in plot_generators.items():
         plot_path_name = join(plot_directory_path, plot_name) + ".png"
         # Generate plot only when not already existing
         if not isfile(plot_path_name):
             figure = function()
-            plt.savefig(plot_path_name)
+            figure.savefig(plot_path_name)
+    # Replace 'plt.show()' with original function
+    plt.show = show_func
 
 def plot_generator(function):
     function_name = function.__name__
@@ -50,7 +60,7 @@ def plot_main_example_alignment():
         "--lmax", "75",
         "-s", scheme_file
     ])
-    show_alignment(scheme_file)
+    return show_alignment(scheme_file)
 
 @plot_generator
 def plot_example_space():
@@ -67,7 +77,7 @@ def plot_no_constraints_scheme_alignment():
     random.seed(0)
     scheme_file = biotite.temp_file("json")
     gecli.main(args=["-s", scheme_file])
-    show_alignment(scheme_file)
+    return show_alignment(scheme_file)
 
 @plot_generator
 def plot_no_green_scheme_alignment():
@@ -79,7 +89,7 @@ def plot_no_green_scheme_alignment():
         "--lmax", "80",
         "-s", scheme_file
     ])
-    show_alignment(scheme_file)
+    return show_alignment(scheme_file)
 
 @plot_generator
 def plot_high_saturation_scheme_alignment():
@@ -91,7 +101,7 @@ def plot_high_saturation_scheme_alignment():
         "--lmax", "75",
         "-s", scheme_file
     ])
-    show_alignment(scheme_file)
+    return show_alignment(scheme_file)
 
 @plot_generator
 def plot_constrained_scheme_alignment():
@@ -104,7 +114,7 @@ def plot_constrained_scheme_alignment():
         "--lmax", "75",
         "-s", scheme_file
     ])
-    show_alignment(scheme_file)
+    return show_alignment(scheme_file)
 
 @plot_generator
 def plot_high_contrast_scheme_alignment():
@@ -116,36 +126,58 @@ def plot_high_contrast_scheme_alignment():
         "--lmax", "75",
         "-s", scheme_file
     ])
-    show_alignment(scheme_file)
+    return show_alignment(scheme_file)
+
+@plot_generator
+def plot_show_space():
+    random.seed(0)
+    scheme_file = biotite.temp_file("json")
+    gecli.main(args=[
+        "--show-space",
+        "--dry-run",
+        "--smin", "30",
+        "--lmin", "60",
+        "--lmax", "70",
+        "-s", scheme_file
+    ])
+    return plt.gcf()
+
+@plot_generator
+def plot_show_scheme():
+    random.seed(0)
+    scheme_file = biotite.temp_file("json")
+    gecli.main(args=[
+        "--show-scheme",
+        "--smin", "30",
+        "--lmin", "60",
+        "--lmax", "70",
+        "-s", scheme_file
+    ])
+    return plt.gcf()
+
+@plot_generator
+def plot_show_example():
+    random.seed(0)
+    scheme_file = biotite.temp_file("json")
+    gecli.main(args=[
+        "--show-example",
+        "--smin", "30",
+        "--lmin", "60",
+        "--lmax", "70",
+        "-s", scheme_file
+    ])
+    return plt.gcf()
 
 
 
 def show_alignment(scheme_file):
     colors = graphics.load_color_scheme(scheme_file)["colors"]
-    fasta_file = fasta.FastaFile()
-    fasta_file.read(join(DOC_PATH, "example_alignment.fasta"))
-    alignment = fasta.get_alignment(fasta_file)
-    alignment = alignment[:60]
-
     fig = plt.figure(figsize=(8.0, 2.5))
-    ax = fig.add_subplot(111)
-    graphics.plot_alignment_type_based(
-        ax, alignment, symbols_per_line=len(alignment), color_scheme=colors
-    )
+    ax = fig.gca()
+    gecli.show_example(ax, colors)
     fig.tight_layout()
     return fig
 
 def show_space(ax, lightness):
     space = gecos.ColorSpace()
-    # For performance reasons, filter correct lightness
-    # before converting to RGB 
-    l = space.lab[..., 0]
-    space.remove(l != lightness)
-    # Remove first dimension (length = 1)
-    rgb_space = space.get_rgb_space()[lightness]
-    rgb_space[np.isnan(rgb_space)] = 0.7
-    ax.imshow(np.transpose(rgb_space, axes=(1,0,2)), origin="lower",
-                extent=(-128, 127,-128, 127), aspect="equal")
-    ax.set_xlabel("a*")
-    ax.set_ylabel("b*")
-    ax.set_title(f"L* = {lightness}")
+    gecli.show_space(ax, space, lightness)

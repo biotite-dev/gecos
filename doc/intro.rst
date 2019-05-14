@@ -58,8 +58,8 @@ If these prerequisites are met, *Gecos* is simply installed via
    $ pip install gecos
 
 
-Usage
------
+Basic usage
+-----------
 
 The most simple invocation is simply
 
@@ -145,8 +145,8 @@ maximum lightness level:
 However, the minimum and the maximum lightness should not be too close, lest
 the contrast will be quite low.
 
-More on constraints
-^^^^^^^^^^^^^^^^^^^
+Color constraints
+-----------------
 
 The *a\** and *b\** components can be restrained in the same way, to create
 a color scheme that is shifted into a certain hue.
@@ -172,8 +172,8 @@ gray (``0``, ``0``):
 
 .. image:: /plots/high_saturation_scheme_alignment.png
 
-Last but not least, you contrain a symbol to a specfic *L\*a\*b\** color via
-the ``--constraint`` or ``-c`` option.
+Last but not least, you can constrain a symbol to a specfic *L\*a\*b\** color
+via the ``--constraint`` or ``-c`` option.
 The optimization will not change the color of constrained symbols
 In the following example, we want *alanine* to be gray and *tryptophane* to be
 blue, both with a lightness of ``70``:
@@ -185,7 +185,7 @@ blue, both with a lightness of ``70``:
 .. image:: /plots/constrained_scheme_alignment.png
 
 Adjusting the contrast
-^^^^^^^^^^^^^^^^^^^^^^
+----------------------
 
 *Gecos'* optimization process contains an additional potential that penalizes
 low contrast color conformations, i.e. average low distances between the
@@ -211,14 +211,72 @@ The following example creates a high contrast color scheme:
    Use the ``--contrast`` parameter with caution.
    Increasing the contrast parameter also means, that the substitution matrix
    based distance is weighted less strongly.
-   Consequently, although a high contrast color schemes may look appealing,
-   it may not represent similarity of symbols very well.
+   Consequently, although a high contrast color scheme may look appealing,
+   it also may not represent the similarity of symbols very well.
 
 Color space and scheme preview
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+------------------------------
 
-You do not need to create an alignment yourself in order to create a color
-scheme.
+You do not need to create an alignment yourself in order to evaluate a newly
+created color scheme.
+*Gecos* provides some visualization capabilities by itself, so you can
+directly discard a color scheme you do not like.
 
-Custom alphabets and matrices
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+At first, you can output your selected color space with the ``--show-space``
+option.
+The additional ``--dry-run`` terminates the program after the color space
+has been displayed:
+
+.. code-block:: console
+   
+   $ gecos --show-space --dry-run --smin 30 --lmin 60 --lmax 70
+
+.. image:: /plots/show_space.png
+
+The plot is a 2D projection of the color space at a fixed lightness.
+The lightness value in the plot is the average of the ``--lmin`` and the
+``--lmax`` value.
+The displayed lightness value can be customized with the ``--lightness``
+option.
+The *hole* in the center of the plot is causes by the saturation constraint.
+
+The ``--show-scheme`` option shows the symbol conformation in color space
+after the optimization.
+Again the plot is a 2D projection at a fixed lightness.
+The white area shows the allowed color space at the given lightness:
+
+.. code-block:: console
+   
+   $ gecos --show-scheme --smin 30 --lmin 60 --lmax 70
+
+.. image:: /plots/show_scheme.png
+
+Some symbols might seem to be outside of the allowed space, but remember
+that the white area is only the allowed space at the given lightness.
+
+Finally, the ``--show-example`` options shows an example multiple protein
+sequence alignment with the color scheme.
+
+.. code-block:: console
+   
+   $ gecos --show-example --smin 30 --lmin 60 --lmax 70
+
+.. image:: /plots/show_example.png
+
+Custom matrices and alphabets
+-----------------------------
+
+While the default substitution matrix *Gecos* uses is *BLOSUM62* you can also
+use a custom substitution matrix.
+Either a valid NCBI substitution matrix name (e.g. `PAM250`) or a custom matrix
+file in NCBI format can be supplied to the ``--matrix`` option.
+Likewise, it is possible to generate a color scheme for a different alphabet
+than the default amino acid alphabet, by setting the ``--alphabet`` option.
+
+In order to demonstrate this the following example will generate a color scheme
+for the *protein blocks* (PB) alphabet
+(`de Brevern et al., 2000 <https://doi.org/10.1002/1097-0134(20001115)41:3\<271::AID-PROT10\>3.0.CO;2-Z>`_ ).
+*protein blocks* consists of 16 symbols, where each one represents another
+protein backbone conformation.
+In a nutshell PBs can be used to encode a molecular 3D structure into a
+sequence.
