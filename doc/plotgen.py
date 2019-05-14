@@ -56,11 +56,67 @@ def plot_main_example_alignment():
 def plot_example_space():
     figure = plt.figure(figsize=(8.0, 4.0))
     ax = figure.add_subplot(121)
-    show_space(ax, 50)
+    show_space(ax, 40)
     ax = figure.add_subplot(122)
-    show_space(ax, 65)
+    show_space(ax, 70)
     figure.tight_layout()
     return figure
+
+@plot_generator
+def plot_no_constraints_scheme_alignment():
+    random.seed(0)
+    scheme_file = biotite.temp_file("json")
+    gecli.main(args=["-s", scheme_file])
+    show_alignment(scheme_file)
+
+@plot_generator
+def plot_no_green_scheme_alignment():
+    random.seed(0)
+    scheme_file = biotite.temp_file("json")
+    gecli.main(args=[
+        "--amin", "0",
+        "--lmin", "50",
+        "--lmax", "80",
+        "-s", scheme_file
+    ])
+    show_alignment(scheme_file)
+
+@plot_generator
+def plot_high_saturation_scheme_alignment():
+    random.seed(1)
+    scheme_file = biotite.temp_file("json")
+    gecli.main(args=[
+        "--smin", "30",
+        "--lmin", "55",
+        "--lmax", "75",
+        "-s", scheme_file
+    ])
+    show_alignment(scheme_file)
+
+@plot_generator
+def plot_constrained_scheme_alignment():
+    random.seed(0)
+    scheme_file = biotite.temp_file("json")
+    gecli.main(args=[
+        "-c", "A", "70", "0", "0",
+        "-c", "W", "70", "-20", "-40",
+        "--lmin", "60",
+        "--lmax", "75",
+        "-s", scheme_file
+    ])
+    show_alignment(scheme_file)
+
+@plot_generator
+def plot_high_contrast_scheme_alignment():
+    random.seed(0)
+    scheme_file = biotite.temp_file("json")
+    gecli.main(args=[
+        "--contrast", "100",
+        "--lmin", "60",
+        "--lmax", "75",
+        "-s", scheme_file
+    ])
+    show_alignment(scheme_file)
 
 
 
