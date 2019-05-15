@@ -9,6 +9,7 @@ import numpy as np
 import numpy.random as random
 import biotite as biotite
 import biotite.sequence as seq
+import biotite.sequence.align as align
 import biotite.sequence.io.fasta as fasta
 import biotite.sequence.graphics as graphics
 import gecos
@@ -16,6 +17,8 @@ import gecos.cli as gecli
 
 
 DOC_PATH = dirname(realpath(__file__))
+PB_EXAMPLE_FILE_NAME \
+    = join(dirname(realpath(__file__)), "pb_alignment.fasta")
 
 
 plot_generators = {}
@@ -167,6 +170,62 @@ def plot_show_example():
     ])
     return plt.gcf()
 
+@plot_generator
+def plot_pb_scheme_alignment():
+    random.seed(1)
+    scheme_file = biotite.temp_file("json")
+    mat_file = biotite.temp_file("mat")
+    with open(mat_file, "w") as file:
+        # PB substitution matrix, adapted from PBxplore
+        file.write(
+            """
+                a     b     c     d     e     f     g     h     i     j     k     l     m     n     o     p
+            a  516   -59   113  -105  -411  -177   -27  -361    47  -103  -644  -259  -599  -372  -124   -83
+            b  -59   541  -146  -210  -155  -310   -97    90   182  -128   -30    29  -745  -242  -165    22
+            c  113  -146   360   -14  -333  -240    49  -438  -269  -282  -688  -682  -608  -455  -147     6
+            d -105  -210   -14   221     5  -131  -349  -278  -253  -173  -585  -670 -1573 -1048  -691  -497
+            e -411  -155  -333     5   520   185   186   138  -378   -70  -112  -514 -1136  -469  -617  -632
+            f -177  -310  -240  -131   185   459   -99   -45  -445    83  -214   -88  -547  -629  -406  -552
+            g  -27   -97    49  -349   186   -99   665   -99   -89  -118  -409  -138  -124   172   128   254
+            h -361    90  -438  -278   138   -45   -99   632  -205   316   192  -108  -712  -359    95  -399
+            i   47   182  -269  -253  -378  -445   -89  -205   696   186     8    15  -709  -269  -169   226
+            j -103  -128  -282  -173   -70    83  -118   316   186   768   196     5  -398  -340  -117  -104
+            k -644   -30  -688  -585  -112  -214  -409   192     8   196   568   -65  -270  -231  -471  -382
+            l -259    29  -682  -670  -514   -88  -138  -108    15     5   -65   533  -131     8   -11  -316
+            m -599  -745  -608 -1573 -1136  -547  -124  -712  -709  -398  -270  -131   241    -4  -190  -155
+            n -372  -242  -455 -1048  -469  -629   172  -359  -269  -340  -231     8    -4   703    88   146
+            o -124  -165  -147  -691  -617  -406   128    95  -169  -117  -471   -11  -190    88   716    58
+            p  -83    22     6  -497  -632  -552   254  -399   226  -104  -382  -316  -155   146    58   609
+            """
+        )
+    gecli.main(args=[
+        "--alphabet", "abcdefghijklmnop",
+        "--matrix", mat_file,
+        "--contrast", "500",
+        "--lmin", "60",
+        "--lmax", "65",
+        "-s", scheme_file
+    ])
+
+    colors = graphics.load_color_scheme(scheme_file)["colors"]
+    fig = plt.figure(figsize=(8.0, 5.0))
+    ax = fig.gca()
+
+    pb_alphabet = seq.LetterAlphabet("abcdefghijklmnop")
+    fasta_file = fasta.FastaFile()
+    fasta_file.read(PB_EXAMPLE_FILE_NAME)
+    seq_strings = list(fasta_file.values())
+    sequences = [seq.GeneralSequence(pb_alphabet, seq_str.replace("-",""))
+                 for seq_str in seq_strings]
+    trace = align.Alignment.trace_from_strings(seq_strings)
+    alignment = align.Alignment(sequences, trace, score=None)
+    
+    graphics.plot_alignment_type_based(
+        ax, alignment, symbols_per_line=60, spacing=2, color_scheme=colors
+    )
+
+    fig.tight_layout()
+    return fig
 
 
 def show_alignment(scheme_file):

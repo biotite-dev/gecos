@@ -266,17 +266,27 @@ sequence alignment with the color scheme.
 Custom matrices and alphabets
 -----------------------------
 
-While the default substitution matrix *Gecos* uses is *BLOSUM62* you can also
+While the default substitution matrix *Gecos* uses is *BLOSUM62*, you can also
 use a custom substitution matrix.
 Either a valid NCBI substitution matrix name (e.g. `PAM250`) or a custom matrix
-file in NCBI format can be supplied to the ``--matrix`` option.
+file in NCBI format can be supplied to the ``--matrix``/``-m`` option.
 Likewise, it is possible to generate a color scheme for a different alphabet
-than the default amino acid alphabet, by setting the ``--alphabet`` option.
+than the default amino acid alphabet, by setting the ``--alphabet``/``-a``
+option.
 
 In order to demonstrate this the following example will generate a color scheme
 for the *protein blocks* (PB) alphabet
 (`de Brevern et al., 2000 <https://doi.org/10.1002/1097-0134(20001115)41:3\<271::AID-PROT10\>3.0.CO;2-Z>`_ ).
-The *Protein blocks* alphabet consists of 16 symbols, where each one represents
-another protein backbone conformation.
+The *Protein blocks* alphabet consists of 16 symbols, from ``a`` to ``p``,
+where each one represents another protein backbone conformation.
 In a nutshell, PBs can be used to encode a molecular 3D structure into a
 sequence.
+
+In order to generate a color scheme you need to tell *Gecos* to use the
+PB alphabet and the PB substitution matrix (stored in the file ``PB.mat``):
+
+.. code-block:: console
+   
+   $ gecos -a abcdefghijklmnop -m PB.mat --contrast 500 --lmin 60 --lmax 65 -s pb_scheme.json
+
+.. image:: /plots/pb_scheme_alignment.png
