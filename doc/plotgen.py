@@ -49,7 +49,6 @@ def plot_generator(function):
     return function
 
 
-
 @plot_generator
 def plot_main_example_alignment():
     random.seed(4)
@@ -109,7 +108,7 @@ def plot_constrained_scheme_alignment():
     scheme_file = biotite.temp_file("json")
     gecli.main(args=[
         "-c", "A", "70", "0", "0",
-        "-c", "W", "70", "-20", "-40",
+        "-c", "W", "70", "-10", "-40",
         "--lmin", "60",
         "--lmax", "75",
         "-s", scheme_file

@@ -11,7 +11,7 @@ import numpy as np
 import numpy.random as random
 import biotite.sequence as seq
 import biotite.sequence.align as align
-from .colors import convert_lab_to_rgb
+from .colors import lab_to_rgb
 
 
 MIN_L = 0
@@ -38,7 +38,7 @@ class ColorOptimizer(object):
         
         @property
         def rgb_colors(self):
-            return convert_lab_to_rgb(self.lab_colors.astype(int))
+            return lab_to_rgb(self.lab_colors.astype(int))
     
     def __init__(self, matrix, space, constraints=None, contrast=10):
         self._space = space.space.copy()

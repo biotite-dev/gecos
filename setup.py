@@ -63,7 +63,7 @@ setup(
     
     install_requires = ["biotite",
                         "numpy",
-                        "colormath"],
+                        "scikit-image"],
     python_requires = ">=3.6",
     
     cmdclass = {"test": PyTestCommand},

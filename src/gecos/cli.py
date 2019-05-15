@@ -13,7 +13,6 @@ import biotite.sequence.io.fasta as fasta
 import biotite.sequence.graphics as graphics
 from .space import ColorSpace
 from .optimizer import ColorOptimizer
-from .colors import convert_lab_to_rgb
 from .file import write_color_scheme
 
 
