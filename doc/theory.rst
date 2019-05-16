@@ -20,17 +20,28 @@ and a linear *contrast potential* :math:`V_C`:
 
 .. math:: V_T = V_H + V_C
 
-For both terms it is required that the input substitution matrix :math:`S` is
-converted into a distance matrix :math:`D`:
+Construction of distance matrix
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. math:: D_{ij} = S_{ii} - S_{ij}
+For both potential terms it is required that the input substitution matrix
+:math:`S` is converted into a triangular distance matrix :math:`D'`
 
-For any substitution matrix :math:`S_{ii}`, should be the maximum value in the
+.. math:: D'_{ij} = (S_{ii} - S_{ij}) + (S_{jj} - S_{ji}) / 2
+
+For any substitution matrix :math:`S_{ii}` should be the maximum value in the
 row/column :math:`i`,
-otherwise a symbol would be more similar to another symbol than to itself
+otherwise a symbol would be more similar to another symbol than to itself.
+Thus, :math:`D'_{ii} = 0`.
 
-On the other side the matrix :math:`C` denotes the pairwise perceptual
-differences of the *L\*a\*b\** color for each pair of symbols.
+:math:`D'` is scaled, so that the average distance is :math:`1`.
+
+.. math:: D = \frac {D'} {\left< D' \right>} 
+
+Perceptual difference matrix
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+On the other side the triangular matrix :math:`C` denotes the pairwise
+perceptual differences of the *L\*a\*b\** color for each pair of symbols.
 The perceptual difference is approximated as the euclidean distance:
 
 .. math:: C_{ij} = \sqrt{(L^*_i - L^*_j)^2 + (a^*_i - a^*_j)^2 + (b^*_i - b^*_j)^2}
@@ -43,7 +54,10 @@ distance matrix :math:`D`, a scale factor :math:`f_s` is introduced.
 :math:`f_s` is the proportion of the average distance in :math:`D` to the
 average difference in :math:`C`:
 
-.. math:: f_s = \frac{\left< D \right>}{\left< C \right>}
+.. math:: f_s
+   = \frac{\left< D \right>}{\left< C \right>}
+   = \frac{ \frac{1}{n} \sum_{ij} D } { \frac{1}{n} \sum_{ij} C }
+   = \frac{ \sum_{ij} D_{ij} } { \sum_{ij} C_{ij} }
 
 As :math:`C` is variable, :math:`f_s` also dynamically changes.
 
@@ -64,9 +78,11 @@ The *contrast potential* rewards symbol conformations with a high contrast,
 i.e. a high average perceptual difference between the symbols.
 Like the harmonic potentials adjusts the relative distances between the
 symbols, the *contrast potential* tries to maximize the absolute distances.
-The *contrast factor* :math:`f_c` is used for weighting of this term:
+A reciprocal potential based on sum of color differences is used here.
+The *contrast factor* :math:`f_c` is a user-supplied parameter for weighting
+this term:
 
-.. math:: V_C = -f_c \left< C \right>
+.. math:: V_C = \frac{f_c}{\sum_{ij} C_{ij}} 
 
 This term drives the symbols to the edges of the color
 space, thereby increasing the contrast.

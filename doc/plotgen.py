@@ -123,7 +123,7 @@ def plot_high_contrast_scheme_alignment():
     random.seed(0)
     scheme_file = biotite.temp_file("json")
     gecli.main(args=[
-        "--contrast", "100",
+        "--contrast", "500",
         "--lmin", "60",
         "--lmax", "75",
         "-s", scheme_file
@@ -201,7 +201,6 @@ def plot_pb_scheme_alignment():
     gecli.main(args=[
         "--alphabet", "abcdefghijklmnop",
         "--matrix", mat_file,
-        "--contrast", "500",
         "--lmin", "60",
         "--lmax", "65",
         "-s", scheme_file

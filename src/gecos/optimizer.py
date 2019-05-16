@@ -3,9 +3,10 @@
 # information.
 
 __author__ = "Patrick Kunzmann"
-__all__ = ["ColorOptimizer"]
+__all__ = ["ColorOptimizer", "PotentialFunction", "DefaultPotentialFunction"]
 
 from collections import namedtuple
+import abc
 import copy
 import numpy as np
 import numpy.random as random
@@ -40,19 +41,17 @@ class ColorOptimizer(object):
         def rgb_colors(self):
             return lab_to_rgb(self.lab_colors.astype(int))
     
-    def __init__(self, matrix, space, constraints=None, contrast=10):
+    def __init__(self, alphabet, potential_function, space, constraints=None):
+        self._alphabet = alphabet
+        self._n_symbols = len(alphabet)
+        self._pot_func = potential_function
         self._space = space.space.copy()
         self._coord = None
         self._trajectory = []
         self._potentials = []
-        
-        if not matrix.is_symmetric():
-            raise ValueError("Substitution matrix must be symmetric")
-        self._alphabet = matrix.get_alphabet1()
-        distance_matrix = self.calculate_distace_matrix(matrix)
 
         if constraints is None:
-            self._constraints = np.full((len(self._alphabet), 3), np.nan)
+            self._constraints = np.full((self._n_symbols, 3), np.nan)
         else:
             for constraint in constraints:
                 if not np.isnan(constraint).any() and \
@@ -61,24 +60,12 @@ class ColorOptimizer(object):
                         f"Constraint {constraint} is outside the allowed space"
                     )
             self._constraints = constraints.copy()
-        
-        ### Potential parameters ###
-        # Under optimal conditions the distances in the simulation
-        # should be equal to distances calculated from the
-        # substitution matrix
-        self._dist_opt = distance_matrix
-        # The average optimal distance is used to relate the visual
-        # distances to the distances in the substitution matrix
-        self._mean_dist_opt = np.mean(self._dist_opt)
-        # The contrast factor is used to force a distribution into the
-        # edges of the color space
-        self._contrast = contrast
 
         ### Set initial conformation ###
         # Every symbol has the 'l', 'a' and 'b' coordinates
         # The coordinates are initially filled with values
         # that are guaranteed to be invalid (l cannot be -1)
-        start_coord = np.full((len(self._alphabet), 3), -1, dtype=float)
+        start_coord = np.full((self._n_symbols, 3), -1, dtype=float)
         # Chose start position from allowed positions at random
         for i in range(start_coord.shape[0]):
             while not self._is_allowed(start_coord[i]):
@@ -90,7 +77,7 @@ class ColorOptimizer(object):
         self._set_coordinates(start_coord)
 
     def set_coordinates(self, coord):
-        if coord.shape != (len(self._alphabet), 3):
+        if coord.shape != (self._n_symbols, 3):
             raise ValueError(
                 f"Given shape is {coord.shape}, "
                 f"but expected shape is {(len(self._alphabet), 3)}"
@@ -108,14 +95,14 @@ class ColorOptimizer(object):
         self._coord = coord
         self._trajectory.append(coord)
         if potential is None:
-            potential = self._potential_function(coord)
+            potential = self._pot_func(coord)
         self._potentials.append(potential)
     
     def optimize(self, n_steps, temp, step_size):
         for i in range(n_steps):
             pot = self._potentials[-1]
             new_coord = self._move(self._coord, step_size)
-            new_pot = self._potential_function(new_coord)
+            new_pot = self._pot_func(new_coord)
             if new_pot < pot:
                 self._set_coordinates(new_coord, new_pot)
             else:
@@ -162,25 +149,60 @@ class ColorOptimizer(object):
         mask = ~(np.isnan(self._constraints).any(axis=-1))
         coord[mask] = self._constraints[mask]
 
-    def _potential_function(self, coord):
-        vis_dist = np.sqrt(
+
+class PotentialFunction(metaclass=abc.ABCMeta):
+
+    def __init__(self, n_symbols):
+        self._n_symbols = n_symbols
+
+    @abc.abstractmethod
+    def __call__(self, coord):
+        if len(coord) != self._n_symbols:
+            raise ValueError(
+                f"Expected {self._n_symbols} coordinates, but got {len(coord)}"
+            )
+
+
+class DefaultPotentialFunction(PotentialFunction):
+
+    def __init__(self, matrix, contrast=100):
+        if not matrix.is_symmetric():
+            raise ValueError("Substitution matrix must be symmetric")
+        super().__init__(len(matrix.get_alphabet1()))
+        self._matrix = self._calculate_distance_matrix(matrix)
+        self._matrix_sum = np.sum(self._matrix)
+        # Scale contrast factor internally
+        # so the user does not need to type hight numbers
+        self._contrast = contrast * 1000
+    
+    def __call__(self, coord):
+        super().__call__(coord)
+        dist = np.sqrt(
             np.sum(
                 (coord[:, np.newaxis, :] - coord[np.newaxis, :, :])**2, axis=-1
             )
         )
-        mean_vis_dist = np.mean(vis_dist)
+        dist = np.tril(dist)
+        dist_sum = np.sum(dist)
         # This factor translates visual distances
         # into substitution matrix distances
-        scale_factor = self._mean_dist_opt / mean_vis_dist
+        scale_factor = self._matrix_sum / dist_sum
         # Harmonic potentials between each pair of symbols
-        pot = (vis_dist*scale_factor - self._dist_opt)**2
+        harmonic_pot = np.sum((dist*scale_factor - self._matrix)**2)
         # Contrast term: Favours conformations
-        # that take a large area of the color space
-        pot += self._contrast * scale_factor
-        return(np.sum(pot))
-    
+        # with large absolute color differences
+        # 'where=dist' includes all non-zeroes
+        contrast_pot = self._contrast / dist_sum
+        return harmonic_pot + contrast_pot
+        
     @staticmethod
-    def calculate_distace_matrix(similarity_matrix):
+    def _calculate_distance_matrix(similarity_matrix):
         scores = similarity_matrix.score_matrix()
-        distances = np.max(scores, axis=0) - scores
+        diff_to_max = np.diag(scores) - scores
+        distances = np.tril((diff_to_max + diff_to_max.T) / 2)
+        # Side length of the triangular matrix
+        n = len(scores) - 1
+        norm_factor = n/2 * (n+1)
+        # Scale, so that average distance is 1
+        distances = distances / (np.sum(distances) / norm_factor)
         return distances

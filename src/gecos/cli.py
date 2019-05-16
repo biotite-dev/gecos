@@ -12,7 +12,7 @@ import biotite.sequence.align as align
 import biotite.sequence.io.fasta as fasta
 import biotite.sequence.graphics as graphics
 from .space import ColorSpace
-from .optimizer import ColorOptimizer
+from .optimizer import ColorOptimizer, DefaultPotentialFunction
 from .file import write_color_scheme
 
 
@@ -127,7 +127,7 @@ def main(args=None):
     )
 
     opt_group.add_argument(
-        "--contrast", default=10, type=int,
+        "--contrast", default=100, type=int,
         help="The contrast factor controls how strongly the symbols are "
              "pushed to the edges of the color space. "
              "At the minimum value '0' contrast is not rewarded. "
@@ -241,15 +241,24 @@ def main(args=None):
     if args.constraint is not None:
         for symbol, l, a, b in args.constraint:
             constraints[alphabet.encode(symbol)] = (l,a,b)
-    optimizer = ColorOptimizer(matrix, space, constraints, args.contrast)
+    
+    pot_func = DefaultPotentialFunction(matrix, args.contrast)
+    optimizer = ColorOptimizer(
+        matrix.get_alphabet1(), pot_func, space, constraints
+    )
+    
+    # Simulated annealing:
+    # Temperature and step size are slowly decreased
     temps      = [100, 80, 60, 40, 20, 10, 8,   6,   4,   2,   1  ]
+    temps = [t*0.02 for t in temps]
     step_sizes = [10,  8,  6,  4,  2,  1,  0.8, 0.6, 0.4, 0.2, 0.1]
     nparallel = args.nparallel
+    # Each temperature is used for 'nsteps'
     nsteps = int(args.nsteps / len(temps))
     for temp, step_size in zip(temps, step_sizes): 
         with ProcessPoolExecutor() as executor:
-            # Split the optimizer into multiple optimizers that perfrom
-            # in parallel
+            # Split the optimizer into multiple optimizers that perform
+            # optimization at current temperature in parallel
             futures = [
                 executor.submit(
                     optimize, copy.deepcopy(optimizer), nsteps, temp, step_size
