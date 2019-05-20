@@ -254,7 +254,7 @@ The white area shows the allowed color space at the given lightness:
 Some symbols might seem to be outside of the allowed space, but remember
 that the white area is only the allowed space at the given lightness.
 
-Finally, the ``--show-example`` options shows an example multiple protein
+The ``--show-example`` options shows an example multiple protein
 sequence alignment with the color scheme.
 
 .. code-block:: console
@@ -262,6 +262,15 @@ sequence alignment with the color scheme.
    $ gecos --show-example --smin 30 --lmin 60 --lmax 70
 
 .. image:: /plots/show_example.png
+
+Finally, you can plot the progression of the potential, *Gecos* tries to
+minimize, during the course of the optimization.
+
+.. code-block:: console
+   
+   $ gecos --show-pot --smin 30 --lmin 60 --lmax 70
+
+.. image:: /plots/show_pot.png
 
 Custom matrices and alphabets
 -----------------------------
@@ -287,6 +296,6 @@ PB alphabet and the PB substitution matrix (stored in the file ``PB.mat``):
 
 .. code-block:: console
    
-   $ gecos -a abcdefghijklmnop -m PB.mat --lmin 60 --lmax 65 -s pb_scheme.json
+   $ gecos -a abcdefghijklmnop -m PB.mat --contrast 50 --lmin 65 --lmax 70 -s pb_scheme.json
 
 .. image:: /plots/pb_scheme_alignment.png
