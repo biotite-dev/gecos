@@ -114,8 +114,8 @@ this term:
 This term drives the symbols to the edges of the color
 space, thereby increasing the contrast.
 
-Optimzation
------------
+Optimization
+------------
 
 The purpose of *Gecos* is to find colors that match distances derived from a
 substitution matrix as well as possible.
