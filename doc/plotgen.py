@@ -7,6 +7,8 @@ from os import mkdir
 import matplotlib.pyplot as plt
 import numpy as np
 import numpy.random as random
+from sphinx.util.logging import getLogger
+from sphinx.util import status_iterator
 import biotite as biotite
 import biotite.sequence as seq
 import biotite.sequence.align as align
@@ -33,8 +35,17 @@ def generate(plot_directory_path):
     # Create plot directory if not already existing
     if not isdir(plot_directory_path):
         mkdir(plot_directory_path)
+    # Log progress in terminal
+    logger = getLogger('sphinx-gallery')
+    logger.info("generating plots...", color="white")
+    iterator = status_iterator(
+        plot_generators.items(),
+        "generating plots...",
+        length=len(plot_generators),
+        stringify_func=lambda val : val[0]
+    )
     # Run '@plot_generator' functions
-    for plot_name, function in plot_generators.items():
+    for plot_name, function in iterator:
         plot_path_name = join(plot_directory_path, plot_name) + ".png"
         # Generate plot only when not already existing
         if not isfile(plot_path_name):
@@ -171,8 +182,21 @@ def plot_show_example():
     return plt.gcf()
 
 @plot_generator
+def plot_show_pot():
+    random.seed(0)
+    scheme_file = biotite.temp_file("json")
+    gecli.main(args=[
+        "--show-pot",
+        "--smin", "30",
+        "--lmin", "60",
+        "--lmax", "70",
+        "-s", scheme_file
+    ])
+    return plt.gcf()
+
+@plot_generator
 def plot_pb_scheme_alignment():
-    random.seed(1)
+    random.seed(0)
     scheme_file = biotite.temp_file("json")
     mat_file = biotite.temp_file("mat")
     with open(mat_file, "w") as file:
@@ -201,8 +225,9 @@ def plot_pb_scheme_alignment():
     gecli.main(args=[
         "--alphabet", "abcdefghijklmnop",
         "--matrix", mat_file,
-        "--lmin", "60",
-        "--lmax", "65",
+        "--contrast", "50",
+        "--lmin", "65",
+        "--lmax", "70",
         "-s", scheme_file
     ])
 
