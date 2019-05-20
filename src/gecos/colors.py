@@ -5,6 +5,7 @@
 __author__ = "Patrick Kunzmann"
 __all__ = ["rgb_to_lab", "lab_to_rgb"]
 
+import warnings
 import numpy as np
 from skimage.color import rgb2lab, lab2rgb
 
@@ -22,7 +23,9 @@ def _convert_color(color, convert_func):
         color = color.astype(float, copy=False)
     original_shape = color.shape
     color = color.reshape([1,-1,3])
-    conv_color = convert_func(color)
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        conv_color = convert_func(color)
     conv_color[
         :,
         (conv_color[0] == 0).any(axis=-1) | (conv_color[0] == 1).any(axis=-1),
