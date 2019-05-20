@@ -88,7 +88,7 @@ Output files
 If no output files are specified, *Gecos* simply outputs the generated color
 scheme in JSON format to *STDOUT*.
 Alternatively, the scheme can be directly saved to a file specified via
-``--scheme-file``/``-s``.
+``--scheme-file``/``-f``.
 The name of the scheme inside the file is set with ``--name``.
 Optionally, the score values throughout the simulation can be saved via
 ``--score-file`` for further analysis.

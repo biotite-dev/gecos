@@ -48,7 +48,8 @@ def main(args=None):
                     "\n"
                     "The algorithm tries to find an optimal color scheme by "
                     "means of color differences by performing a "
-                    "Metropolis-Monte-Carlo optimization in color space."
+                    "Metropolis-Monte-Carlo optimization in color space.",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter
     )
     
     space_group  = parser.add_argument_group(
@@ -79,42 +80,51 @@ def main(args=None):
     space_group.add_argument("--smin", type=int,
                              help="All colors in the space must "
                                   "have the specified saturation at minimum "
-                                  "(a^2 + b^2 >= smin^2)."
+                                  "(a^2 + b^2 >= smin^2).",
+                             metavar="S"
     )
     space_group.add_argument("--smax", type=int,
                              help="All colors in the space must "
                                   "have the specified saturation at maximum "
-                                  "(a^2 + b^2 <= smax^2)."
+                                  "(a^2 + b^2 <= smax^2).",
+                             metavar="S"
     )
     space_group.add_argument("--lmin", type=int,
                              help="All colors in the space must "
-                                  "have the specified lightness at minimum."
+                                  "have the specified lightness at minimum.",
+                             metavar="L"
     )
     space_group.add_argument("--lmax", type=int,
                              help="All colors in the space must "
-                                  "have the specified lightness at maximum."
+                                  "have the specified lightness at maximum.",
+                             metavar="L"
     )
     space_group.add_argument("--amin", type=int,
                              help="All colors in the space must "
-                                  "have the specified 'a*' value at minimum."
+                                  "have the specified 'a*' value at minimum.",
+                             metavar="A"
     )
     space_group.add_argument("--amax", type=int,
                              help="All colors in the space must "
-                                  "have the specified 'a*' value at maximum."
+                                  "have the specified 'a*' value at maximum.",
+                             metavar="A"
     )
     space_group.add_argument("--bmin", type=int,
                              help="All colors in the space must "
-                                  "have the specified 'b*' value at minimum."
+                                  "have the specified 'b*' value at minimum.",
+                             metavar="B"
     )
     space_group.add_argument("--bmax", type=int,
                              help="All colors in the space must "
-                                  "have the specified 'b*' value at maximum."
+                                  "have the specified 'b*' value at maximum.",
+                             metavar="B"
     )
 
     matrix_group.add_argument(
         "--alphabet", "-a",
         help="A custom alphabet to generate the scheme for (e.g. 'ACGT'). "
-             "By default an alphabet containing the 20 amino acids is used. "
+             "By default an alphabet containing the 20 amino acids is used. ",
+        metavar="SYMBOLS"
     )
     matrix_group.add_argument(
         "--matrix", "-m", default="BLOSUM62",
@@ -122,16 +132,16 @@ def main(args=None):
              "distances from. "
              "Can be an NCBI substitution matrix name (e.g. 'BLOSUM62') or "
              "alternatively a substitution matrix file in NCBI format "
-             "(e.g. 'blosum62.mat'). "
-             "Default: 'BLOSUM62'"
+             "(e.g. 'blosum62.mat').",
+        metavar="MATRIX"
     )
 
     opt_group.add_argument(
         "--contrast", default=100, type=int,
         help="The contrast factor controls how strongly the symbols are "
              "pushed to the edges of the color space. "
-             "At the minimum value '0' contrast is not rewarded. "
-             "Default: 10"
+             "At the minimum value '0' contrast is not rewarded.",
+        metavar="FACTOR"
     )
     opt_group.add_argument(
         "--constraint", "-c", nargs=4, action="append",
@@ -139,7 +149,8 @@ def main(args=None):
              "This argument takes four values: a symbol, "
              "and the color channels 'l*', 'a*' and 'b*'"
              "(e.g. 'A 65 10 15')."
-             "Can be repeated to add constraints for multiple symbols."
+             "Can be repeated to add constraints for multiple symbols.",
+        metavar=("SYMBOL", "L", "A", "B")
     )
     opt_group.add_argument(
         "--nsteps", default=20000, type=int,
@@ -147,33 +158,37 @@ def main(args=None):
              "to find the optimal conformation of the color scheme. "
              "This parameter sets the total amount of optimization steps. "
              "With a higher number of steps the quality of the optimization "
-             "increases at the cost of a longer runtime."
-             "Default: 15000"
+             "increases at the cost of a longer runtime.",
+        metavar="NUMBER"
     )
     opt_group.add_argument(
         "--nparallel", default=10, type=int,
         help="The amount of optimizers that search in parallel for the "
              "optimal color scheme. "
              "With a higher number of optimizers the quality of the "
-             "optimization increases at the cost of a longer runtime."
+             "optimization increases at the cost of a longer runtime.",
+        metavar="NUMBER"
     )
     
     output_group.add_argument(
-        "--scheme-file", "-s",
+        "--scheme-file", "-f",
         type=argparse.FileType(mode="w"), default=sys.stdout,
         help="Write the generated color scheme into the specified file. "
              "The scheme is saved as Biotite-compatible JSON file. "
-             "By default the scheme is output to STDOUT."
+             "By default the scheme is output to STDOUT.",
+        metavar="FILE"
     )
     output_group.add_argument(
         "--name", default="scheme",
-        help="The name of the color scheme that is used in the JSON file."
+        help="The name of the color scheme that is used in the JSON file.",
+        metavar="NAME"
     )
     output_group.add_argument(
-        "--score-file", "-p", type=argparse.FileType(mode="w"),
+        "--score-file", type=argparse.FileType(mode="w"),
         help="Write the scores during the color scheme optimization "
              "into the specified file. "
-             "Each line corresponds to one optimization step."
+             "Each line corresponds to one optimization step.",
+        metavar="FILE"
     )
 
     vis_group.add_argument(
@@ -183,7 +198,8 @@ def main(args=None):
              "'--show-scheme' options show the color space excerpt at the "
              "given lightness level. "
              "By default the mean of the minimum and maximum lightness of the "
-             "space is chosen."
+             "space is chosen.",
+        metavar="LIGHTNESS"
     )
     vis_group.add_argument(
         "--show-space", action="store_true",

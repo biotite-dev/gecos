@@ -69,7 +69,7 @@ The most simple invocation is simply
 
 By default *Gecos* uses the *BLOSUM62* matrix to generate a color scheme, which
 is printed to console.
-Alternatively, You can save the color scheme into a file via the ``-s`` option.
+Alternatively, You can save the color scheme into a file via the ``-f`` option.
 The color scheme is printed in a *Biotite* compatible JSON format and will
 look something like this:
 
@@ -138,7 +138,7 @@ maximum lightness level:
 
 .. code-block:: console
    
-   $ gecos --lmin 60 --lmax 75 -s a_color_scheme.json
+   $ gecos --lmin 60 --lmax 75 -f a_color_scheme.json
 
 .. image:: /plots/main_example_alignment.png
 
@@ -158,7 +158,7 @@ In order to compensate for the lost contrast, the lightness range is increased:
 
 .. code-block:: console
 
-   $ gecos --amin 0 --lmin 50 --lmax 80 -s no_green_scheme.json
+   $ gecos --amin 0 --lmin 50 --lmax 80 -f no_green_scheme.json
 
 .. image:: /plots/no_green_scheme_alignment.png
 
@@ -168,7 +168,7 @@ gray (``0``, ``0``):
 
 .. code-block:: console
 
-   $ gecos --smin 30 --lmin 55 --lmax 75 -s saturated_scheme.json
+   $ gecos --smin 30 --lmin 55 --lmax 75 -f saturated_scheme.json
 
 .. image:: /plots/high_saturation_scheme_alignment.png
 
@@ -180,7 +180,7 @@ blue, both with a lightness of ``70``:
 
 .. code-block:: console
 
-   $ gecos -c A 70 0 0 -c W 70 -10 -40 --lmin 60 --lmax 75 -s constrained_scheme.json
+   $ gecos -c A 70 0 0 -c W 70 -10 -40 --lmin 60 --lmax 75 -f constrained_scheme.json
 
 .. image:: /plots/constrained_scheme_alignment.png
 
@@ -202,7 +202,7 @@ The following example creates a high contrast color scheme:
 
 .. code-block:: console
    
-   $ gecos --contrast 100 --lmin 60 --lmax 75 -s high_contrast_scheme.json
+   $ gecos --contrast 100 --lmin 60 --lmax 75 -f high_contrast_scheme.json
 
 .. image:: /plots/high_contrast_scheme_alignment.png
 
@@ -297,6 +297,6 @@ PB alphabet and the PB substitution matrix (stored in the file ``PB.mat``):
 
 .. code-block:: console
    
-   $ gecos -a abcdefghijklmnop -m PB.mat --contrast 50 --lmin 65 --lmax 70 -s pb_scheme.json
+   $ gecos -a abcdefghijklmnop -m PB.mat --contrast 50 --lmin 65 --lmax 70 -f pb_scheme.json
 
 .. image:: /plots/pb_scheme_alignment.png
