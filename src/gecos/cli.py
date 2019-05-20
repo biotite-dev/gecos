@@ -52,15 +52,15 @@ def main(args=None):
     )
     
     space_group  = parser.add_argument_group(
-        title="Color space arguments",
+        title="Color space",
         description=None
     )
     matrix_group = parser.add_argument_group(
-        title="Substitution matrix arguments",
+        title="Substitution matrix and alphabet",
         description=None
     )
     opt_group = parser.add_argument_group(
-        title="Visual distance optimization arguments",
+        title="Optimization",
         description=None
     )
     output_group = parser.add_argument_group(
@@ -68,7 +68,7 @@ def main(args=None):
         description=None
     )
     vis_group    = parser.add_argument_group(
-        title="Visualization options",
+        title="Visualization",
         description=None
     )
 
