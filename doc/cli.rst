@@ -77,11 +77,39 @@ A color can be fixed for a certain symbol by giving a
 (symbol, *L\**, *a\**, *b\**) tuple to the ``--constraint``/``-c`` option
 (e.g. ``A 50 0 0``).
 The option can be repeated to fix the color for multiple symbols.
-
+In addition to the relative color difference the optimizer also tries to find
+a scheme with a high contrast. The weighting of the importance of the contrast
+is adjusted with ``--contrast``.
 
 
 Output files
 ------------
 
+If no output files are specified, *Gecos* simply outputs the generated color
+scheme in JSON format to *STDOUT*.
+Alternatively, the scheme can be directly saved to a file specified via
+``--scheme-file``/``-s``.
+The name of the scheme inside the file is set with ``--name``.
+Optionally, the score values throughout the simulation can be saved via
+``--score-file`` for further analysis.
+
 Visualization
 -------------
+
+*Gecos* provides some visualization tools for direct evaluation of a color
+space or a generated color scheme:
+
++---------------------+----------------------------------------------------------------------------------+
+| ``--show_space``    | Shows the color space, including the user-supplied limitations.                  |
++---------------------+----------------------------------------------------------------------------------+
+| ``--show_scheme``   | Shows conformation of symbols in the selected color space.                       |
++---------------------+----------------------------------------------------------------------------------+
+| ``--show_score``    | Shows the score values throughout the simulation.                                |
++---------------------+----------------------------------------------------------------------------------+
+| ``--show_example``  | Shows an example multiple protein sequence alignment using the new color scheme. |
+|                     | Cannot be combined with a custom alphabet.                                       |
++---------------------+----------------------------------------------------------------------------------+
+
+``--show_space`` and ``--show_scheme`` show a 2D *a\*b\** cross section of the
+3D color space.
+The *L\** value of this section is set with ``--lightness``/``-l``.
