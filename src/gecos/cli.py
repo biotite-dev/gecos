@@ -77,47 +77,55 @@ def main(args=None):
         "--dry-run", "-n", action="store_true",
         help="Show only the customized color space and terminate the program."
     )
-    space_group.add_argument("--smin", type=int,
-                             help="All colors in the space must "
-                                  "have the specified saturation at minimum "
-                                  "(a^2 + b^2 >= smin^2).",
-                             metavar="S"
+    space_group.add_argument(
+        "--smin", type=int,
+        help="All colors in the space must "
+            "have the specified saturation at minimum "
+            "(a^2 + b^2 >= smin^2).",
+        metavar="S"
     )
-    space_group.add_argument("--smax", type=int,
-                             help="All colors in the space must "
-                                  "have the specified saturation at maximum "
-                                  "(a^2 + b^2 <= smax^2).",
-                             metavar="S"
+    space_group.add_argument(
+        "--smax", type=int,
+        help="All colors in the space must "
+            "have the specified saturation at maximum "
+            "(a^2 + b^2 <= smax^2).",
+        metavar="S"
     )
-    space_group.add_argument("--lmin", type=int,
-                             help="All colors in the space must "
-                                  "have the specified lightness at minimum.",
-                             metavar="L"
+    space_group.add_argument(
+        "--lmin", type=int,
+        help="All colors in the space must "
+            "have the specified lightness at minimum.",
+        metavar="L"
     )
-    space_group.add_argument("--lmax", type=int,
-                             help="All colors in the space must "
-                                  "have the specified lightness at maximum.",
-                             metavar="L"
+    space_group.add_argument(
+        "--lmax", type=int,
+        help="All colors in the space must "
+            "have the specified lightness at maximum.",
+        metavar="L"
     )
-    space_group.add_argument("--amin", type=int,
-                             help="All colors in the space must "
-                                  "have the specified 'a*' value at minimum.",
-                             metavar="A"
+    space_group.add_argument(
+        "--amin", type=int,
+        help="All colors in the space must "
+            "have the specified 'a*' value at minimum.",
+        metavar="A"
     )
-    space_group.add_argument("--amax", type=int,
-                             help="All colors in the space must "
-                                  "have the specified 'a*' value at maximum.",
-                             metavar="A"
+    space_group.add_argument(
+        "--amax", type=int,
+        help="All colors in the space must "
+            "have the specified 'a*' value at maximum.",
+        metavar="A"
     )
-    space_group.add_argument("--bmin", type=int,
-                             help="All colors in the space must "
-                                  "have the specified 'b*' value at minimum.",
-                             metavar="B"
+    space_group.add_argument(
+        "--bmin", type=int,
+        help="All colors in the space must "
+            "have the specified 'b*' value at minimum.",
+        metavar="B"
     )
-    space_group.add_argument("--bmax", type=int,
-                             help="All colors in the space must "
-                                  "have the specified 'b*' value at maximum.",
-                             metavar="B"
+    space_group.add_argument(
+        "--bmax", type=int,
+        help="All colors in the space must "
+            "have the specified 'b*' value at maximum.",
+        metavar="B"
     )
 
     matrix_group.add_argument(
