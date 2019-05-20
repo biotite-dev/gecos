@@ -71,7 +71,7 @@ def plot_main_example_alignment():
         "--matrix", "BLOSUM62",
         "--lmin", "60",
         "--lmax", "75",
-        "-s", scheme_file
+        "-f", scheme_file
     ])
     return show_alignment(scheme_file)
 
@@ -89,7 +89,7 @@ def plot_example_space():
 def plot_no_constraints_scheme_alignment():
     random.seed(0)
     scheme_file = biotite.temp_file("json")
-    gecli.main(args=["-s", scheme_file])
+    gecli.main(args=["-f", scheme_file])
     return show_alignment(scheme_file)
 
 @plot_generator
@@ -100,7 +100,7 @@ def plot_no_green_scheme_alignment():
         "--amin", "0",
         "--lmin", "50",
         "--lmax", "80",
-        "-s", scheme_file
+        "-f", scheme_file
     ])
     return show_alignment(scheme_file)
 
@@ -112,7 +112,7 @@ def plot_high_saturation_scheme_alignment():
         "--smin", "30",
         "--lmin", "55",
         "--lmax", "75",
-        "-s", scheme_file
+        "-f", scheme_file
     ])
     return show_alignment(scheme_file)
 
@@ -125,7 +125,7 @@ def plot_constrained_scheme_alignment():
         "-c", "W", "70", "-10", "-40",
         "--lmin", "60",
         "--lmax", "75",
-        "-s", scheme_file
+        "-f", scheme_file
     ])
     return show_alignment(scheme_file)
 
@@ -137,7 +137,7 @@ def plot_high_contrast_scheme_alignment():
         "--contrast", "500",
         "--lmin", "60",
         "--lmax", "75",
-        "-s", scheme_file
+        "-f", scheme_file
     ])
     return show_alignment(scheme_file)
 
@@ -151,7 +151,7 @@ def plot_show_space():
         "--smin", "30",
         "--lmin", "60",
         "--lmax", "70",
-        "-s", scheme_file
+        "-f", scheme_file
     ])
     return plt.gcf()
 
@@ -164,7 +164,7 @@ def plot_show_scheme():
         "--smin", "30",
         "--lmin", "60",
         "--lmax", "70",
-        "-s", scheme_file
+        "-f", scheme_file
     ])
     return plt.gcf()
 
@@ -177,7 +177,7 @@ def plot_show_example():
         "--smin", "30",
         "--lmin", "60",
         "--lmax", "70",
-        "-s", scheme_file
+        "-f", scheme_file
     ])
     return plt.gcf()
 
@@ -190,7 +190,7 @@ def plot_show_score():
         "--smin", "30",
         "--lmin", "60",
         "--lmax", "70",
-        "-s", scheme_file
+        "-f", scheme_file
     ])
     return plt.gcf()
 
@@ -228,7 +228,7 @@ def plot_pb_scheme_alignment():
         "--contrast", "50",
         "--lmin", "65",
         "--lmax", "70",
-        "-s", scheme_file
+        "-f", scheme_file
     ])
 
     colors = graphics.load_color_scheme(scheme_file)["colors"]
