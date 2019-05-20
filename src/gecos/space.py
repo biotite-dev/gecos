@@ -15,6 +15,29 @@ SPACE_FILE_NAME = join(dirname(realpath(__file__)), "space.npy")
 
 
 class ColorSpace():
+    """
+    Create a color space, that spans the complete *RGB* gamut of the *Lab*
+    color space.
+    The *Lab* components are discretized into integer values.
+
+    A color space describes the boundaries of the color scheme to be generated.
+    It uses the *Lab* color space.
+    In addition to the inherent limit to colors, that can also be displayed in
+    *RGB* space, further parts of the space can be removed by calling
+    :func:`remove()`.
+
+    Attributes
+    ----------
+    shape : tuple of int
+        The shape of the space, i.e. the amount of *Lab* values in each
+        dimension.
+    lab : ndarray, shape=(100, 256, 256, 3), dtype=int
+        The complete discretized *Lab* color space in the *ab* range of
+        ``-128`` to ``127``.
+    space : shape=(100, 256, 256), dtype=bool
+        The allowed part of the `lab` attribute, i.e. the part that is
+        convertible into *RGB* and was not manually removed.
+    """
 
     def __init__(self, file_name=None):
         if file_name is None:
@@ -31,9 +54,37 @@ class ColorSpace():
             self._space = np.load(file)
 
     def remove(self, mask):
+        """
+        Remove a portion of the color space.
+        
+        Parameters
+        ----------
+        space : ndarray, shape=(100, 256, 256), dtype=bool
+            The space is removed where this mask is true.
+        
+        Example
+        -------
+        Remove space below a defined lightness:
+
+        >>> L_MIN = 50
+        >>> space = ColorSpace()
+        >>> lab = space.lab
+        >>> l = lab[..., 0]
+        >>> space.remove(l < L_MIN)
+        """
         self._space &= ~mask
     
     def get_rgb_space(self):
+        """
+        Convert the *Lab* colors of the space in *RGB* colors.
+        
+        Returns
+        -------
+        rgb : ndarray, shape=(100,256,256,3), dtype=float
+            The *RGB* colors.
+            Colors that cannot be displayed in *RGB* or were manually
+            removed from the space are ``NaN``.
+        """
         rgb = lab_to_rgb(self._lab)
         rgb[~self._space] = np.nan
         return rgb
@@ -44,7 +95,7 @@ class ColorSpace():
 
     @property
     def shape(self):
-        return (256, 256)
+        return (100, 256, 256)
     
     @property
     def lab(self):
@@ -52,6 +103,11 @@ class ColorSpace():
 
     @staticmethod
     def _generate(file_name=None):
+        """
+        Precalculate which part of the *Lab* space can be displayed in
+        *RGB* and save the result as boolean mask into a
+        *NumPy* ``.npy`` file.
+        """
         lab = np.zeros((100, 256, 256, 3), dtype=int)
         lab[:,:,:,0] = np.arange(100      )[:, np.newaxis, np.newaxis]
         lab[:,:,:,1] = np.arange(-128, 128)[np.newaxis, :, np.newaxis]
