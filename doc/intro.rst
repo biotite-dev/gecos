@@ -187,7 +187,7 @@ blue, both with a lightness of ``70``:
 Adjusting the contrast
 ----------------------
 
-*Gecos'* optimization process contains an additional potential that penalizes
+*Gecos'* optimization process contains an additional score that penalizes
 low contrast color conformations, i.e. average low distances between the
 symbols.
 This behavior can be customized by setting the ``--contrast`` option.
@@ -263,14 +263,15 @@ sequence alignment with the color scheme.
 
 .. image:: /plots/show_example.png
 
-Finally, you can plot the progression of the potential, *Gecos* tries to
-minimize, during the course of the optimization.
+Finally, you can plot the progression of the score, *Gecos* tries to minimize,
+during the course of the optimization.
+Note that a low score means a *better* color conformation.
 
 .. code-block:: console
    
-   $ gecos --show-pot --smin 30 --lmin 60 --lmax 70
+   $ gecos --show-score --smin 30 --lmin 60 --lmax 70
 
-.. image:: /plots/show_pot.png
+.. image:: /plots/show_score.png
 
 Custom matrices and alphabets
 -----------------------------

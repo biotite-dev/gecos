@@ -12,7 +12,7 @@ import biotite.sequence.align as align
 import biotite.sequence.io.fasta as fasta
 import biotite.sequence.graphics as graphics
 from .space import ColorSpace
-from .optimizer import ColorOptimizer, DefaultPotentialFunction
+from .optimizer import ColorOptimizer, DefaultScoreFunction
 from .file import write_color_scheme
 
 
@@ -170,8 +170,8 @@ def main(args=None):
         help="The name of the color scheme that is used in the JSON file."
     )
     output_group.add_argument(
-        "--pot-file", "-p", type=argparse.FileType(mode="w"),
-        help="Write the potentials during the color scheme optimization "
+        "--score-file", "-p", type=argparse.FileType(mode="w"),
+        help="Write the scores during the color scheme optimization "
              "into the specified file. "
              "Each line corresponds to one optimization step."
     )
@@ -206,8 +206,8 @@ def main(args=None):
              "Cannot be used in combination with a custom '--alphabet' value."
     )
     vis_group.add_argument(
-        "--show-pot", action="store_true",
-        help="Show a plot of the potential during the optimization process."
+        "--show-score", action="store_true",
+        help="Show a plot of the score during the optimization process."
     )
 
     args = parser.parse_args(args=args)
@@ -242,9 +242,9 @@ def main(args=None):
         for symbol, l, a, b in args.constraint:
             constraints[alphabet.encode(symbol)] = (l,a,b)
     
-    pot_func = DefaultPotentialFunction(matrix, args.contrast)
+    score_func = DefaultScoreFunction(matrix, args.contrast)
     optimizer = ColorOptimizer(
-        matrix.get_alphabet1(), pot_func, space, constraints
+        matrix.get_alphabet1(), score_func, space, constraints
     )
     
     # Simulated annealing:
@@ -266,14 +266,14 @@ def main(args=None):
             ]
             splitted_optimizers = [future.result() for future in futures]
         # Proceed with the one of the splitted optimizers
-        # with the best potential in the end of optimization
-        pot = [opt.get_result().potential for opt in splitted_optimizers]
-        optimizer = splitted_optimizers[np.argmin(pot)]
+        # with the best score in the end of optimization
+        score = [opt.get_result().score for opt in splitted_optimizers]
+        optimizer = splitted_optimizers[np.argmin(score)]
     result = optimizer.get_result()
 
     write_scheme(args.scheme_file, result, args.name)
-    if args.pot_file:
-        write_potential(args.pot_file, result)
+    if args.score_file:
+        write_score(args.score_file, result)
 
     if args.show_space:
         figure = plt.figure(figsize=(FIGURE_WIDTH, FIGURE_WIDTH))
@@ -296,10 +296,10 @@ def main(args=None):
         ax = figure.gca()
         show_example(ax, result.rgb_colors)
         figure.tight_layout()
-    if args.show_pot:
+    if args.show_score:
         figure = plt.figure(figsize=(FIGURE_WIDTH, 6.0))
         ax = figure.gca()
-        show_potential(ax, result.potentials)
+        show_score(ax, result.scores)
         figure.tight_layout()
     plt.show()
 
@@ -369,8 +369,8 @@ def adjust_b(space, bmin, bmax):
 def write_scheme(file, result, name):
     write_color_scheme(file, result, name)
 
-def write_potential(file, result):
-    np.savetxt(file, result.potentials, fmt="%.2f")
+def write_score(file, result):
+    np.savetxt(file, result.scores, fmt="%.2f")
 
 
 def show_space(ax, space, lightness):
@@ -410,10 +410,10 @@ def show_example(ax, colors):
         color_scheme=colors
     )
 
-def show_potential(ax, potentials):
-    ax.plot(potentials)
+def show_score(ax, scores):
+    ax.plot(scores)
     ax.set_xlabel("Step")
-    ax.set_ylabel("Potential")
+    ax.set_ylabel("Score")
 
 
 def optimize(optimizer, n_steps, temp, step_size):

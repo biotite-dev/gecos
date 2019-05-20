@@ -3,7 +3,7 @@
 # information.
 
 __author__ = "Patrick Kunzmann"
-__all__ = ["ColorOptimizer", "PotentialFunction", "DefaultPotentialFunction"]
+__all__ = ["ColorOptimizer", "ScoreFunction", "DefaultScoreFunction"]
 
 from collections import namedtuple
 import abc
@@ -23,15 +23,15 @@ MAX_AB = 127
 
 class ColorOptimizer(object):
 
-    class Result(namedtuple("Result", ["alphabet", "trajectory", "potentials"])):
+    class Result(namedtuple("Result", ["alphabet", "trajectory", "scores"])):
 
         @property
         def coord(self):
             return copy.deepcopy(self.trajectory[-1])
         
         @property
-        def potential(self):
-            return self.potentials[-1]
+        def score(self):
+            return self.scores[-1]
 
         @property
         def lab_colors(self):
@@ -41,14 +41,14 @@ class ColorOptimizer(object):
         def rgb_colors(self):
             return lab_to_rgb(self.lab_colors.astype(int))
     
-    def __init__(self, alphabet, potential_function, space, constraints=None):
+    def __init__(self, alphabet, score_function, space, constraints=None):
         self._alphabet = alphabet
         self._n_symbols = len(alphabet)
-        self._pot_func = potential_function
+        self._score_func = score_function
         self._space = space.space.copy()
         self._coord = None
         self._trajectory = []
-        self._potentials = []
+        self._scores = []
 
         if constraints is None:
             self._constraints = np.full((self._n_symbols, 3), np.nan)
@@ -91,33 +91,33 @@ class ColorOptimizer(object):
         self._apply_constraints(coord)
         self._set_coordinates(coord)
     
-    def _set_coordinates(self, coord, potential=None):
+    def _set_coordinates(self, coord, score=None):
         self._coord = coord
         self._trajectory.append(coord)
-        if potential is None:
-            potential = self._pot_func(coord)
-        self._potentials.append(potential)
+        if score is None:
+            score = self._score_func(coord)
+        self._scores.append(score)
     
     def optimize(self, n_steps, temp, step_size):
         for i in range(n_steps):
-            pot = self._potentials[-1]
+            score = self._scores[-1]
             new_coord = self._move(self._coord, step_size)
-            new_pot = self._pot_func(new_coord)
-            if new_pot < pot:
-                self._set_coordinates(new_coord, new_pot)
+            new_score = self._score_func(new_coord)
+            if new_score < score:
+                self._set_coordinates(new_coord, new_score)
             else:
-                p = np.exp(-(new_pot-pot) / temp)
+                p = np.exp(-(new_score-score) / temp)
                 if p > random.rand():
-                    self._set_coordinates(new_coord, new_pot)
+                    self._set_coordinates(new_coord, new_score)
                 else:
-                    self._set_coordinates(self._coord, new_pot)
+                    self._set_coordinates(self._coord, new_score)
 
     def get_result(self):
         trajectory = np.array(self._trajectory)
         return ColorOptimizer.Result(
             alphabet = self._alphabet,
             trajectory = trajectory,
-            potentials = np.array(self._potentials)
+            scores = np.array(self._scores)
         )
     
     def _is_allowed(self, coord):
@@ -150,7 +150,7 @@ class ColorOptimizer(object):
         coord[mask] = self._constraints[mask]
 
 
-class PotentialFunction(metaclass=abc.ABCMeta):
+class ScoreFunction(metaclass=abc.ABCMeta):
 
     def __init__(self, n_symbols):
         self._n_symbols = n_symbols
@@ -163,7 +163,7 @@ class PotentialFunction(metaclass=abc.ABCMeta):
             )
 
 
-class DefaultPotentialFunction(PotentialFunction):
+class DefaultScoreFunction(ScoreFunction):
 
     def __init__(self, matrix, contrast=100):
         if not matrix.is_symmetric():
@@ -188,12 +188,12 @@ class DefaultPotentialFunction(PotentialFunction):
         # into substitution matrix distances
         scale_factor = self._matrix_sum / dist_sum
         # Harmonic potentials between each pair of symbols
-        harmonic_pot = np.sum((dist*scale_factor - self._matrix)**2)
+        harmonic_score = np.sum((dist*scale_factor - self._matrix)**2)
         # Contrast term: Favours conformations
         # with large absolute color differences
         # 'where=dist' includes all non-zeroes
-        contrast_pot = self._contrast / dist_sum
-        return harmonic_pot + contrast_pot
+        contrast_score = self._contrast / dist_sum
+        return harmonic_score + contrast_score
         
     @staticmethod
     def _calculate_distance_matrix(similarity_matrix):

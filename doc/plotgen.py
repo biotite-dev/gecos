@@ -182,11 +182,11 @@ def plot_show_example():
     return plt.gcf()
 
 @plot_generator
-def plot_show_pot():
+def plot_show_score():
     random.seed(0)
     scheme_file = biotite.temp_file("json")
     gecli.main(args=[
-        "--show-pot",
+        "--show-score",
         "--smin", "30",
         "--lmin", "60",
         "--lmax", "70",

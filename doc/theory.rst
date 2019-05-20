@@ -36,24 +36,26 @@ calculated very fast, which is crucial in the optimization process.
 *Gecos* uses the package *scikit-image* for all kinds of color space
 conversions.
 
-Potential function
-------------------
+Score function
+--------------
 
-The potential function :math:`V_T` is a compound of two terms:
-a sum of harmonic potentials between each pair of symbols :math:`V_H`
-and a linear *contrast potential* :math:`V_C`:
+The score function :math:`S_T` is a compound of two terms:
+a sum of harmonic potentials between each pair of symbols :math:`S_H`
+and a linear *contrast score* :math:`S_C`:
 
-.. math:: V_T = V_H + V_C
+.. math:: S_T = S_H + S_C
+
+Note that a low score is desirable in this context.
 
 Construction of distance matrix
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-For both potential terms it is required that the input substitution matrix
-:math:`S` is converted into a triangular distance matrix :math:`D'`
+For both score terms it is required that the input substitution matrix
+:math:`M` is converted into a triangular distance matrix :math:`D'`
 
 .. math:: D'_{ij} = (S_{ii} - S_{ij}) + (S_{jj} - S_{ji}) / 2
 
-For any substitution matrix :math:`S_{ii}` should be the maximum value in the
+For any substitution matrix :math:`M_{ii}` should be the maximum value in the
 row/column :math:`i`,
 otherwise a symbol would be more similar to another symbol than to itself.
 Thus, :math:`D'_{ii} = 0`.
@@ -92,22 +94,22 @@ Harmonic potentials
 A harmonic potential applied all pairs of symbols with the equilibrium
 position being the respective value from the distance matrix:
 
-.. math:: V_H = \sum_{ij} \left( f_s C_{ij} - D_{ij} \right)^2
+.. math:: S_H = \sum_{ij} \left( f_s C_{ij} - D_{ij} \right)^2
 
 This adjusts the relative distance between all symbols.
 
-Contrast potential
-^^^^^^^^^^^^^^^^^^
+Contrast score
+^^^^^^^^^^^^^^
 
-The *contrast potential* rewards symbol conformations with a high contrast,
+The *contrast score* rewards symbol conformations with a high contrast,
 i.e. a high average perceptual difference between the symbols.
 Like the harmonic potentials adjusts the relative distances between the
-symbols, the *contrast potential* tries to maximize the absolute distances.
-A reciprocal potential based on sum of color differences is used here.
+symbols, the *contrast score* tries to maximize the absolute distances.
+A reciprocal function based on sum of color differences is used here.
 The *contrast factor* :math:`f_c` is a user-supplied parameter for weighting
 this term:
 
-.. math:: V_C = \frac{f_c}{\sum_{ij} C_{ij}} 
+.. math:: S_C = \frac{f_c}{\sum_{ij} C_{ij}} 
 
 This term drives the symbols to the edges of the color
 space, thereby increasing the contrast.
@@ -118,14 +120,14 @@ Optimzation
 The purpose of *Gecos* is to find colors that match distances derived from a
 substitution matrix as well as possible.
 This means, that the software tries to optimize the *L\*a\*b\** values for all
-symbols, so that the potential function described above is minimized.
+symbols, so that the score function described above is minimized.
 The *L\*a\*b\** values can be described as vector :math:`\vec{x}` with
 :math:`n_s \times 3` dimensions, where :math:`n_s` is the amount of symbols
 in the alphabet (e.g. 20 for amin acids). 
 
 The optimization is performed via Metropolis-Monte-Carlo:
 Starting from a random initial conformation :math:`\vec{x}_0` with a
-potential of :math:`V_0 = V_T(\vec{x}_0)`, the following
+score of :math:`S_0 = S_T(\vec{x}_0)`, the following
 steps are performed:
 
    1) Perform random modifications on :math:`\vec{x}_n`:
@@ -135,26 +137,26 @@ steps are performed:
       :math:`f_M` is a function that adds a random value within a user-defined
       radius to :math:`\vec{x}`.
    
-   2) Calculate the potential of the new conformation:
+   2) Calculate the score of the new conformation:
       
-      :math:`V_{n+1} = V_T(\vec{x}_{n+1})`
+      :math:`S_{n+1} = S_T(\vec{x}_{n+1})`
    
    3) Decide, whether to accept the new conformation based on the difference
-      to the potential of the conformation prior to modification:
+      to the score of the conformation prior to modification:
 
-      :math:`\Delta V = V_{n+1} - V_{n}`
+      :math:`\Delta S = S_{n+1} - S_{n}`
 
-      If :math:`\Delta V \leq 0`, then accept the new conformation.
+      If :math:`\Delta S \leq 0`, then accept the new conformation.
       
-      If :math:`\Delta V > 0`, then accept the new conformation with a
-      probability of :math:`p = \exp{ \frac{\Delta V}{T} }` where :math:`T`
+      If :math:`\Delta S > 0`, then accept the new conformation with a
+      probability of :math:`p = e^{ \frac{\Delta S}{T} }` where :math:`T`
       is the user-supplied temperature parameter.
       In case the new conformation is not accepted, the new conformation
       is replaced with the conformation prior to modification:
 
       :math:`\vec{x}_{n+1} = \vec{x}_n`
 
-These steps are repeated until an acceptable potential has been reached.
+These steps are repeated until an acceptable score has been reached.
 
 The command line interface uses a special variant, where the temperature is
 stepwise decreased (simulated annealing).
