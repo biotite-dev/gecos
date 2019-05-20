@@ -16,7 +16,7 @@ common one.
 Despite its popularity, the *RGB* color space does not do well when it comes
 to perceptual linearity:
 Changing an *RGB* color value by a particular amount does not result in a
-visual difference of the same amount. 
+visual difference of the same amount.
 Due to this issue *Gecos* uses the *CIE L\*a\*b\** color space instead, that
 behaves perceptually approximately linear.
 The color space consists of three components:
@@ -274,7 +274,7 @@ Likewise, it is possible to generate a color scheme for a different alphabet
 than the default amino acid alphabet, by setting the ``--alphabet``/``-a``
 option.
 
-In order to demonstrate this the following example will generate a color scheme
+In order to demonstrate this, the following example will generate a color scheme
 for the *protein blocks* (PB) alphabet
 (`de Brevern et al., 2000 <https://doi.org/10.1002/1097-0134(20001115)41:3\<271::AID-PROT10\>3.0.CO;2-Z>`_ ).
 The *Protein blocks* alphabet consists of 16 symbols, from ``a`` to ``p``,
@@ -287,6 +287,6 @@ PB alphabet and the PB substitution matrix (stored in the file ``PB.mat``):
 
 .. code-block:: console
    
-   $ gecos -a abcdefghijklmnop -m PB.mat --contrast 500 --lmin 60 --lmax 65 -s pb_scheme.json
+   $ gecos -a abcdefghijklmnop -m PB.mat --lmin 60 --lmax 65 -s pb_scheme.json
 
 .. image:: /plots/pb_scheme_alignment.png

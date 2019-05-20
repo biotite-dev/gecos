@@ -5,16 +5,41 @@
 Background
 ==========
 
-Color spaces
-------------
+Color space
+-----------
 
-The perceptual difference of two colors is approximately
-the euclidean distance.
+*Gecos* utilizes *CIE L\*a\*b\**, a color space that is designed to be
+perceptually linear:
+Changes of *L\*a\*b\** component values scale approximately linearly with the
+visually perceived change of the corresponding color.
+The *L\*a\*b\** color space contains the following components:
+
+   - **L\*** - The lightness of the color. ``0`` is completely black and
+     ``100`` is completely white.
+   - **a\*** - The green-red component. Green is in the negative direction,
+     red is in the positive direction.
+   - **b\*** - The blue-yellow component. Blue is in the negative direction,
+     yellow is in the positive direction.
+
+The values for *a\** and *b\** are theoretically not limited in either
+direction, but only a subspace (*gamut*) can be displayed on devices and can
+be converted into *RGB*.
+
+Due to the perceptual linearity, the perceptual difference of two *L\*a\*b\**
+colors is approximately the euclidean distance of the *L\*a\*b\** components,
+according to the *CIE76* formula.
+Newer standards apply several corrections to the euclidean distance to deal
+with perceptual non-uniformities.
+However, *Gecos* still uses the simple euclidean distance as it can be
+calculated very fast, which is crucial in the optimization process.
+
+*Gecos* uses the package *scikit-image* for all kinds of color space
+conversions.
 
 Potential function
 ------------------
 
-The potential function :math:`V_T` is compound of two terms:
+The potential function :math:`V_T` is a compound of two terms:
 a sum of harmonic potentials between each pair of symbols :math:`V_H`
 and a linear *contrast potential* :math:`V_C`:
 
@@ -89,3 +114,47 @@ space, thereby increasing the contrast.
 
 Optimzation
 -----------
+
+The purpose of *Gecos* is to find colors that match distances derived from a
+substitution matrix as well as possible.
+This means, that the software tries to optimize the *L\*a\*b\** values for all
+symbols, so that the potential function described above is minimized.
+The *L\*a\*b\** values can be described as vector :math:`\vec{x}` with
+:math:`n_s \times 3` dimensions, where :math:`n_s` is the amount of symbols
+in the alphabet (e.g. 20 for amin acids). 
+
+The optimization is performed via Metropolis-Monte-Carlo:
+Starting from a random initial conformation :math:`\vec{x}_0` with a
+potential of :math:`V_0 = V_T(\vec{x}_0)`, the following
+steps are performed:
+
+   1) Perform random modifications on :math:`\vec{x}_n`:
+      
+      :math:`\vec{x}_{n+1} = f_M(\vec{x}_n)`
+
+      :math:`f_M` is a function that adds a random value within a user-defined
+      radius to :math:`\vec{x}`.
+   
+   2) Calculate the potential of the new conformation:
+      
+      :math:`V_{n+1} = V_T(\vec{x}_{n+1})`
+   
+   3) Decide, whether to accept the new conformation based on the difference
+      to the potential of the conformation prior to modification:
+
+      :math:`\Delta V = V_{n+1} - V_{n}`
+
+      If :math:`\Delta V \leq 0`, then accept the new conformation.
+      
+      If :math:`\Delta V > 0`, then accept the new conformation with a
+      probability of :math:`p = \exp{ \frac{\Delta V}{T} }` where :math:`T`
+      is the user-supplied temperature parameter.
+      In case the new conformation is not accepted, the new conformation
+      is replaced with the conformation prior to modification:
+
+      :math:`\vec{x}_{n+1} = \vec{x}_n`
+
+These steps are repeated until an acceptable potential has been reached.
+
+The command line interface uses a special variant, where the temperature is
+stepwise decreased (simulated annealing).
