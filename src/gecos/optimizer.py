@@ -289,15 +289,13 @@ class DefaultScoreFunction(ScoreFunction):
         A weight for the *contrast score*.
     """
 
-    def __init__(self, matrix, contrast=100):
+    def __init__(self, matrix, contrast=500):
         if not matrix.is_symmetric():
             raise ValueError("Substitution matrix must be symmetric")
         super().__init__(len(matrix.get_alphabet1()))
         self._matrix = self._calculate_distance_matrix(matrix)
         self._matrix_sum = np.sum(self._matrix)
-        # Scale contrast factor internally
-        # so the user does not need to type hight numbers
-        self._contrast = contrast * 1000
+        self._contrast = contrast
     
     def __call__(self, coord):
         super().__call__(coord)
@@ -315,8 +313,8 @@ class DefaultScoreFunction(ScoreFunction):
         harmonic_score = np.sum((dist*scale_factor - self._matrix)**2)
         # Contrast term: Favours conformations
         # with large absolute color differences
-        # 'where=dist' includes all non-zeroes
-        contrast_score = self._contrast / dist_sum
+        mean_dist = dist_sum / DefaultScoreFunction._n_pairs(len(dist))
+        contrast_score = self._contrast / mean_dist
         return harmonic_score + contrast_score
         
     @staticmethod

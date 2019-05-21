@@ -145,7 +145,7 @@ def main(args=None):
     )
 
     opt_group.add_argument(
-        "--contrast", default=100, type=int,
+        "--contrast", default=500, type=int,
         help="The contrast factor controls how strongly the symbols are "
              "pushed to the edges of the color space. "
              "At the minimum value '0' contrast is not rewarded.",

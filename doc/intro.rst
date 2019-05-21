@@ -194,15 +194,13 @@ This behavior can be customized by setting the ``--contrast`` option.
 When the value is ``0``, low contrast schemes are not penalized.
 The higher the value, the more the symbols are driven to the edges of the
 color space.
-However, the magnitude of the value required to obtain a certain effect is
-strongly dependent on the size of the alphabet and the substitution matrix.
-Thus, a bit of experimentation is necessary to find an optimal value for this
+A bit of experimentation is necessary to find an optimal value for this
 option.
 The following example creates a high contrast color scheme:
 
 .. code-block:: console
    
-   $ gecos --contrast 100 --lmin 60 --lmax 75 -f high_contrast_scheme.json
+   $ gecos --contrast 2000 --lmin 60 --lmax 75 -f high_contrast_scheme.json
 
 .. image:: /plots/high_contrast_scheme_alignment.png
 
@@ -297,6 +295,6 @@ PB alphabet and the PB substitution matrix (stored in the file ``PB.mat``):
 
 .. code-block:: console
    
-   $ gecos -a abcdefghijklmnop -m PB.mat --contrast 50 --lmin 65 --lmax 70 -f pb_scheme.json
+   $ gecos -a abcdefghijklmnop -m PB.mat --contrast 300 --lmin 65 --lmax 70 -f pb_scheme.json
 
 .. image:: /plots/pb_scheme_alignment.png

@@ -105,11 +105,11 @@ The *contrast score* rewards symbol conformations with a high contrast,
 i.e. a high average perceptual difference between the symbols.
 Like the harmonic potentials adjusts the relative distances between the
 symbols, the *contrast score* tries to maximize the absolute distances.
-A reciprocal function based on sum of color differences is used here.
+A reciprocal function based on the average color differences is used here.
 The *contrast factor* :math:`f_c` is a user-supplied parameter for weighting
 this term:
 
-.. math:: S_C = \frac{f_c}{\sum_{ij} C_{ij}} 
+.. math:: S_C = \frac{f_c}{\left< C \right>} 
 
 This term drives the symbols to the edges of the color
 space, thereby increasing the contrast.
