@@ -36,6 +36,8 @@ calculated very fast, which is crucial in the optimization process.
 *Gecos* uses the package *scikit-image* for all kinds of color space
 conversions.
 
+.. _score_function: 
+
 Score function
 --------------
 

@@ -68,8 +68,8 @@ class ColorSpace():
         space : ndarray, shape=(100, 256, 256), dtype=bool
             The space is removed where this mask is true.
         
-        Example
-        -------
+        Examples
+        --------
         Remove space below a defined lightness:
 
         >>> L_MIN = 50

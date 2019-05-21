@@ -264,6 +264,19 @@ class ScoreFunction(metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     def __call__(self, coord):
+        """
+        Calculate the score for the given coordinates.
+
+        Parameters
+        ----------
+        coord : ndarray, shape=(n,3), dtype=float
+            The coordinates.
+        
+        Returns
+        -------
+        score : float
+            The score assigned to `coord`.
+        """
         if len(coord) != self._n_symbols:
             raise ValueError(
                 f"Expected {self._n_symbols} coordinates, but got {len(coord)}"
