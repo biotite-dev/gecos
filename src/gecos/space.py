@@ -26,6 +26,12 @@ class ColorSpace():
     *RGB* space, further parts of the space can be removed by calling
     :func:`remove()`.
 
+    Parameters
+    ----------
+    file_name : str, optional
+        The path of a custom file to load the precalculated *RGB* convertible
+        space from.
+
     Attributes
     ----------
     shape : tuple of int

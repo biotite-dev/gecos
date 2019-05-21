@@ -22,12 +22,64 @@ MAX_AB = 127
 
 
 class ColorOptimizer(object):
+    """
+    Create an optimizer that tries to find an optimal color conformation
+    within a given color space based on a score function.
+
+    The optimizer tries to minimize the return value of the score
+    function by adjusting the *Lab* values (coordinates) for each
+    symbol in a given alphabet.
+
+    Parameters
+    ----------
+    alphabet : biotite.sequence.Alphabet
+        The alphabet to calculate the color conformation for.
+    score_function : ScoreFunction or callable
+        The score function which should be minimized.
+        When calling the object, its only parameter must be an array of
+        coordinates with shape *(n, 3)*, where *n* is the length of the
+        alphabet.
+        Its return value must be a single float - the score.
+    space : ColorSpace
+        The color space that defines the allowed space for the
+        coordinates.
+    constraints : ndarray, shape=(n,3), dtype=float, optional
+        An array whose non-NaN values are interpreted as constraints.
+        Constrained values will be fixed during the optimization.
+    """
 
     class Result(namedtuple("Result", ["alphabet", "trajectory", "scores"])):
+        """
+        The result of an optimization.
+        Contains the final color scheme information as well as the
+        course of the coordinates and the score during the optimization.
 
-        @property
-        def coord(self):
-            return copy.deepcopy(self.trajectory[-1])
+        Parameters
+        ----------
+        alphabet : biotite.sequence.Alphabet
+            The alphabet the optimizer used.
+        trajectory : ndarray, shape=(m,n,3), dtype=float
+            The course of the coordinates during the simulation.
+        scores : ndarray, shape=(m,), dtype=float
+            The course of the score during the simulation.
+
+        Attributes
+        ----------
+        alphabet : biotite.sequence.Alphabet
+            The alphabet the optimizer used.
+        trajectory : ndarray, shape=(m,n,3), dtype=float
+            The course of coordinates during the simulation.
+        lab_colors : ndarray, shape=(n,3), dtype=float
+            The final *Lab* color conformation, i.e. the last element of
+            `trajectory`.
+        rgb_colors : ndarray, shape=(n,3), dtype=float
+            The final color conformation converted into *RGB* colors.
+        scores : ndarray, shape=(m,), dtype=float
+            The course of the score during the simulation.
+        score : float
+            The final score, i.e. the last element of `scores`.
+        
+        """
         
         @property
         def score(self):
@@ -77,6 +129,16 @@ class ColorOptimizer(object):
         self._set_coordinates(start_coord)
 
     def set_coordinates(self, coord):
+        """
+        Set the the coordinates of the current color conformation.
+        Potential color constraints are applied on these.
+        This coordinate changes will be tracked in the trajectory.
+        
+        Parameters
+        ----------
+        coord : ndarray, shape=(n,3), dtype=float
+            The new coordinates.
+        """
         if coord.shape != (self._n_symbols, 3):
             raise ValueError(
                 f"Given shape is {coord.shape}, "
@@ -99,6 +161,24 @@ class ColorOptimizer(object):
         self._scores.append(score)
     
     def optimize(self, n_steps, temp, step_size):
+        """
+        Perform a Metropolis-Monte-Carlo optimization on the current
+        coordinates.
+        This tries to minimize the score returned by the score function.
+        
+        Parameters
+        ----------
+        n_steps : int
+            The number of Monte-Carlo steps.
+        temp : float
+            The temperature of the optimization.
+            At higher temperatures, *score barriers* will be more likely
+            overcome, but the optimization will also less likely end in
+            a minimum.
+        step_size : float
+            The radius in which the coordinates is randomly altered in
+            each Monte-Carlo step.
+        """
         for i in range(n_steps):
             score = self._scores[-1]
             new_coord = self._move(self._coord, step_size)
@@ -113,6 +193,14 @@ class ColorOptimizer(object):
                     self._set_coordinates(self._coord, new_score)
 
     def get_result(self):
+        """
+        Get the result of the optimization.
+
+        Returns
+        -------
+        result : ColorOptimizer.Result
+            The result.
+        """
         trajectory = np.array(self._trajectory)
         return ColorOptimizer.Result(
             alphabet = self._alphabet,
@@ -151,6 +239,25 @@ class ColorOptimizer(object):
 
 
 class ScoreFunction(metaclass=abc.ABCMeta):
+    """
+    Abstract base class for a score function.
+    A score function calculates a score from a color conformation
+    (coordinates).
+
+    The score is calculated by calling the object with the coordinates
+    as single argument.
+    Hence, classes inheriting from this base class mut override the
+    :func:`__call__()` method.
+
+    Parameters
+    ----------
+    n_symbols : int
+        The amount of symbols in the system.
+        Equivalent to the length of the alphabet the color scheme is
+        generated for.
+        This value is used to check the shape of the coordinates when
+        calling the score function.
+    """
 
     def __init__(self, n_symbols):
         self._n_symbols = n_symbols
@@ -164,6 +271,23 @@ class ScoreFunction(metaclass=abc.ABCMeta):
 
 
 class DefaultScoreFunction(ScoreFunction):
+    """
+    Create an instance of the default score function *Gecos* uses.
+
+    The score function contains two terms:
+    A sum of harmonic potentials between each pair of symbols, based on
+    a substitution matrix, and *contrast score* that favors schemes with
+    a high contrast.
+
+    Parameters
+    ----------
+    matrix : biotite.sequence.align.SubstitutionMatrix
+        A distance matrix is calculated from this score matrix.
+        The equilibrium positions scale linearly with the values in the
+        distance matrix.
+    contrast : int, optional
+        A weight for the *contrast score*.
+    """
 
     def __init__(self, matrix, contrast=100):
         if not matrix.is_symmetric():
@@ -200,9 +324,16 @@ class DefaultScoreFunction(ScoreFunction):
         scores = similarity_matrix.score_matrix()
         diff_to_max = np.diag(scores) - scores
         distances = np.tril((diff_to_max + diff_to_max.T) / 2)
-        # Side length of the triangular matrix
-        n = len(scores) - 1
-        norm_factor = n/2 * (n+1)
         # Scale, so that average distance is 1
-        distances = distances / (np.sum(distances) / norm_factor)
+        n = DefaultScoreFunction._n_pairs(len(scores))
+        distances /= (np.sum(distances) / n)
         return distances
+    
+    @staticmethod
+    def _n_pairs(n_symbols):
+        """
+        Calculate the number of values in the lower triangle,
+        excluding the main diagonal, of a
+        matrix with a shape *(n_symbols, n_symbols)*.
+        """
+        return (n_symbols - 1) / 2 * n_symbols

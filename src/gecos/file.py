@@ -10,6 +10,21 @@ from matplotlib.colors import to_hex
 
 
 def write_color_scheme(file, result, name=""):
+    """
+    Write a color scheme in the *Biotite* compatible JSON format into
+    a file.
+    
+    Parameters
+    ----------
+    file : file-like object
+        The file to write the scheme into.
+    result : Optimizer.Result
+        The result from the optimization.
+        Contains the color scheme.
+    name : str, optional
+        Name of the scheme. Will be written to the value of the
+        ``"name"`` key.
+    """
     scheme = {}
     scheme["name"] = name
     symbols = result.alphabet.get_symbols()

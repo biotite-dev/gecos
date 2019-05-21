@@ -416,7 +416,9 @@ def show_scheme(ax, space, result, lightness):
     s = space.space
     ax.matshow(space.space[lightness].T, extent=(-128, 127,-128, 127),
                origin="lower", cmap=ListedColormap([(0.7,0.7,0.7), (1,1,1)]))
-    for symbol, pos, color in zip(result.alphabet, result.coord, result.rgb_colors):
+    for symbol, pos, color in zip(
+        result.alphabet, result.lab_colors, result.rgb_colors
+    ):
         ax.text(pos[1], pos[2], symbol, color=color,
                 ha="center", va="center", size=14, weight="heavy")
     ax.set_xlabel("a*")
