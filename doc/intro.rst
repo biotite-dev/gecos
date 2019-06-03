@@ -174,7 +174,7 @@ gray (``0``, ``0``):
 
 Last but not least, you can constrain a symbol to a specfic *L\*a\*b\** color
 via the ``--constraint`` or ``-c`` option.
-The optimization will not change the color of constrained symbols
+The optimization will not change the color of constrained symbols.
 In the following example, we want *alanine* to be gray and *tryptophane* to be
 blue, both with a lightness of ``70``:
 
@@ -204,11 +204,11 @@ The following example creates a high contrast color scheme:
 
 .. image:: /plots/high_contrast_scheme_alignment.png
 
-.. note::
+.. warning::
    
    Use the ``--contrast`` parameter with caution.
    Increasing the contrast parameter also means, that the substitution matrix
-   based distance is weighted less strongly.
+   is weighted less strongly.
    Consequently, although a high contrast color scheme may look appealing,
    it also may not represent the similarity of symbols very well.
 

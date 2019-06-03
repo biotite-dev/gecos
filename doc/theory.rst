@@ -49,6 +49,13 @@ and a linear *contrast score* :math:`S_C`:
 
 Note that a low score is desirable in this context.
 
+.. note::
+   
+   In the following, :math:`\left< X \right>` denotes the arithmetic
+   mean of all matrix elements
+   (:math:`\left< X \right> = \frac{1}{n} \sum_{ij} X_{ij}`).
+   For a triangular matrix only the non-zero diagonals are taken into account.
+
 Construction of distance matrix
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -125,7 +132,7 @@ This means, that the software tries to optimize the *L\*a\*b\** values for all
 symbols, so that the score function described above is minimized.
 The *L\*a\*b\** values can be described as vector :math:`\vec{x}` with
 :math:`n_s \times 3` dimensions, where :math:`n_s` is the amount of symbols
-in the alphabet (e.g. 20 for amin acids). 
+in the alphabet (e.g. 20 for amino acids). 
 
 The optimization is performed via Metropolis-Monte-Carlo:
 Starting from a random initial conformation :math:`\vec{x}_0` with a
