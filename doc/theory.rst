@@ -64,8 +64,8 @@ For both score terms it is required that the input substitution matrix
 
 .. math:: D'_{ij} = (S_{ii} - S_{ij}) + (S_{jj} - S_{ji}) / 2
 
-For any substitution matrix :math:`M_{ii}` should be the maximum value in the
-row/column :math:`i`,
+For any substitution matrix :math:`M`, :math:`M_{ii}` should be the maximum
+value in the row/column :math:`i`,
 otherwise a symbol would be more similar to another symbol than to itself.
 Thus, :math:`D'_{ii} = 0`.
 

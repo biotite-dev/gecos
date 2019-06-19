@@ -36,7 +36,7 @@ upper limit of a color space value.
 | *s*   | ``--smin``  | ``--smax``  |
 +-------+-------------+-------------+
 
-If you would like to display only the customized color and skip the color
+If you would like to display only the customized color space and skip the color
 scheme generation use the ``--dry-run``/``-n`` option.
 
 
