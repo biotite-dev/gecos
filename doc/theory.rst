@@ -60,7 +60,7 @@ Construction of distance matrix
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 For both score terms it is required that the input substitution matrix
-:math:`M` is converted into a triangular distance matrix :math:`D'`
+:math:`M` is converted into a triangular distance matrix :math:`D'`:
 
 .. math:: D'_{ij} = (S_{ii} - S_{ij}) + (S_{jj} - S_{ji}) / 2
 
