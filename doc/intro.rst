@@ -119,9 +119,9 @@ symbols in alphabet.
    Although the format is compliant with the *Biotite* color scheme format,
    the *Biotite* amino acid alphabet contains additional symbols for the
    ambiguous amino acids and the stop codon.
-   Hence incorporating a *Gecos* color scheme into *Biotite* requires that
-   that the symbols ``"B"``, ``"Z"``, ``"X"`` and ``"*"`` are appended at the
-   end of the ``"alphabet"`` value.
+   Hence incorporating a *Gecos* JSON file into the *Biotite* source code
+   requires that the symbols ``"B"``, ``"Z"``, ``"X"`` and ``"*"`` are appended
+   at the end of the ``"alphabet"`` value.
    Editing ``"colors"`` is not necessary.
 
 As the color space was not restricted in any way, the generated color scheme
