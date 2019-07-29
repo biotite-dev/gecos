@@ -39,7 +39,7 @@ class InputError(Exception):
 
 
 @handle_error
-def main(args=None):
+def main(args=None, result_container=None, show_plots=True):
     parser = argparse.ArgumentParser(
         description="This program automatically generates a color scheme for "
                     "sequence alignments. "
@@ -258,7 +258,8 @@ def main(args=None):
         ax = figure.gca()
         show_space(ax, space, lightness)
         figure.tight_layout()
-        plt.show()
+        if show_plots:
+            plt.show()
         return
 
     constraints = np.full((len(alphabet), 3), np.nan)
@@ -325,7 +326,12 @@ def main(args=None):
         ax = figure.gca()
         show_score(ax, result.scores)
         figure.tight_layout()
-    plt.show()
+    if show_plots:
+        plt.show()
+
+    # In case someone wants to use the CLI results in a Python script
+    if result_container is not None:
+        result_container.append(result)
 
 
 def parse_alphabet(alphabet_str):
@@ -421,6 +427,7 @@ def show_scheme(ax, space, result, lightness):
     ):
         ax.text(pos[1], pos[2], symbol, color=color,
                 ha="center", va="center", size=14, weight="heavy")
+    ax.xaxis.set_ticks_position("bottom")
     ax.set_xlabel("a*")
     ax.set_ylabel("b*")
     ax.set_title(f"L* = {lightness}")
