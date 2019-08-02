@@ -62,7 +62,7 @@ Construction of distance matrix
 For both score terms it is required that the input substitution matrix
 :math:`M` is converted into a triangular distance matrix :math:`D'`:
 
-.. math:: D'_{ij} = (S_{ii} - S_{ij}) + (S_{jj} - S_{ji}) / 2
+.. math:: D'_{ij} = \left( (S_{ii} - S_{ij}) + (S_{jj} - S_{ji}) / 2 \right)
 
 For any substitution matrix :math:`M`, :math:`M_{ii}` should be the maximum
 value in the row/column :math:`i`,
