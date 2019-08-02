@@ -27,7 +27,7 @@ install:
   - conda config --set always_yes yes --set changeps1 no
   - conda update -q conda
 
-  - conda create -q -n gecos-env python=$PY_VERSION; fi
+  - conda create -q -n gecos-env python=$PY_VERSION
   - conda install -n gecos-env  -c conda-forge -c anaconda  biotite numpy matplotlib scikit-image pytest sphinx numpydoc
   - source activate gecos-env
 
