@@ -62,7 +62,7 @@ Construction of distance matrix
 For both score terms it is required that the input substitution matrix
 :math:`M` is converted into a triangular distance matrix :math:`D'`:
 
-.. math:: D'_{ij} = (S_{ii} - S_{ij}) + (S_{jj} - S_{ji}) / 2
+.. math:: D'_{ij} = \left( (S_{ii} - S_{ij}) + (S_{jj} - S_{ji}) / 2 \right)
 
 For any substitution matrix :math:`M`, :math:`M_{ii}` should be the maximum
 value in the row/column :math:`i`,
@@ -92,8 +92,8 @@ average difference in :math:`C`:
 
 .. math:: f_s
    = \frac{\left< D \right>}{\left< C \right>}
-   = \frac{ \frac{1}{n} \sum_{ij} D } { \frac{1}{n} \sum_{ij} C }
-   = \frac{ \sum_{ij} D_{ij} } { \sum_{ij} C_{ij} }
+   = \frac{ 1 } { \frac{1}{n} \sum_{ij} C }
+   = \frac{ n } { \sum_{ij} C_{ij} }
 
 As :math:`C` is variable, :math:`f_s` also dynamically changes.
 
@@ -120,6 +120,9 @@ this term:
 
 .. math:: S_C = \frac{f_c}{\left< C \right>} 
 
+Without this term, there would be no score difference between conformations,
+that use a small or a large part of the color space, as long as the relative
+distances are equal.
 This term drives the symbols to the edges of the color
 space, thereby increasing the contrast.
 

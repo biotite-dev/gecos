@@ -2,8 +2,8 @@
    under the 3-Clause BSD License. Please see 'LICENSE.rst' for further
    information.
 
-Gecos - Generated Color Schemes
-===============================
+Gecos - Generated Color Schemes for sequence alignment visualizations
+=====================================================================
 
 Multiple sequence alignments are often visualized by coloring the symbols
 according to some kind of properties.

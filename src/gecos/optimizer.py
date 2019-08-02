@@ -307,7 +307,7 @@ class DefaultScoreFunction(ScoreFunction):
             raise ValueError("Substitution matrix must be symmetric")
         super().__init__(len(matrix.get_alphabet1()))
         self._matrix = self._calculate_distance_matrix(matrix)
-        self._matrix_sum = np.sum(self._matrix)
+        self._n = DefaultScoreFunction._n_pairs(len(matrix.score_matrix()))
         self._contrast = contrast
     
     def __call__(self, coord):
@@ -321,7 +321,7 @@ class DefaultScoreFunction(ScoreFunction):
         dist_sum = np.sum(dist)
         # This factor translates visual distances
         # into substitution matrix distances
-        scale_factor = self._matrix_sum / dist_sum
+        scale_factor = self._n / dist_sum
         # Harmonic potentials between each pair of symbols
         harmonic_score = np.sum((dist*scale_factor - self._matrix)**2)
         # Contrast term: Favours conformations

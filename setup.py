@@ -9,7 +9,27 @@ import shlex
 from src.gecos import __version__
 
 long_description = """
-Generated color schemes.
+Generated color schemes for sequence alignment visualizations
+=============================================================
+
+Multiple sequence alignments are often visualized by coloring the
+symbols according to some kind of properties.
+For example a color scheme for amino acids could use one color for
+hydrophobic residues, another color for positively charged residues
+and so forth.
+Usually, such color schemes are created manually by experienced people
+who have knowledge about the characteristics of the e.g. amino acids,
+so they can assign equal or similar colors to amino acids that share
+similar properties.
+
+The *Gecos* software follows a different approach:
+Instead of looking at specific, sometimes subjective properties,
+it uses another source for estimating the similarity of symbols:
+the substitution matrix itself.
+Similar colors are assigned to high scoring pairs of symbols, low
+scoring pairs get distant colors - in a completely automatic manner.
+As a result the distance of two symbols in the substitution matrix
+corresponds to the perceptual differences in the color scheme.
 """
 
 
@@ -30,7 +50,8 @@ class PyTestCommand(TestCommand):
 setup(
     name="gecos",
     version = __version__,
-    description = "Generated color schemes",
+    description = \
+        "Generated color schemes for sequence alignment visualizations",
     long_description = long_description,
     author = "Patrick Kunzmann",
     author_email = "padix.key@gmail.com",
