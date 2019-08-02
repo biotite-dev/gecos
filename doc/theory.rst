@@ -55,6 +55,10 @@ Note that a low score is desirable in this context.
    mean of all matrix elements
    (:math:`\left< X \right> = \frac{1}{n} \sum_{ij} X_{ij}`).
    For a triangular matrix only the non-zero diagonals are taken into account.
+   Hence, the amount of possible :math:`ij` pairings is equal to
+   :math:`n = \frac{n_s (n_s - 1)} {2}`. :math:`n_s` is the number of symbols
+   in the alphabet.
+
 
 Construction of distance matrix
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
