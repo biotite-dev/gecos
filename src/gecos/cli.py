@@ -3,7 +3,6 @@ from os.path import join, dirname, realpath, isfile
 import argparse
 import copy
 import sys
-from concurrent.futures import ProcessPoolExecutor
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.colors import ListedColormap
@@ -169,14 +168,6 @@ def main(args=None, result_container=None, show_plots=True):
              "increases at the cost of a longer runtime.",
         metavar="NUMBER"
     )
-    opt_group.add_argument(
-        "--nparallel", default=10, type=int,
-        help="The amount of optimizers that search in parallel for the "
-             "optimal color scheme. "
-             "With a higher number of optimizers the quality of the "
-             "optimization increases at the cost of a longer runtime.",
-        metavar="NUMBER"
-    )
     
     output_group.add_argument(
         "--scheme-file", "-f",
@@ -277,23 +268,12 @@ def main(args=None, result_container=None, show_plots=True):
     temps      = [100, 80, 60, 40, 20, 10, 8,   6,   4,   2,   1  ]
     temps = [t*0.02 for t in temps]
     step_sizes = [10,  8,  6,  4,  2,  1,  0.8, 0.6, 0.4, 0.2, 0.1]
-    nparallel = args.nparallel
-    # Each temperature is used for 'nsteps'
-    nsteps = int(args.nsteps / len(temps))
+    # TODO: The integer division might result in a number of actual
+    # total steps, differing from the nsteps argument 
+    nsteps_per_temp = args.nsteps // len(temps)
+
     for temp, step_size in zip(temps, step_sizes): 
-        with ProcessPoolExecutor() as executor:
-            # Split the optimizer into multiple optimizers that perform
-            # optimization at current temperature in parallel
-            futures = [
-                executor.submit(
-                    optimize, copy.deepcopy(optimizer), nsteps, temp, step_size
-                ) for _ in range(nparallel)
-            ]
-            splitted_optimizers = [future.result() for future in futures]
-        # Proceed with the one of the splitted optimizers
-        # with the best score in the end of optimization
-        score = [opt.get_result().score for opt in splitted_optimizers]
-        optimizer = splitted_optimizers[np.argmin(score)]
+        optimizer.optimize(nsteps_per_temp, temp, step_size)
     result = optimizer.get_result()
 
     write_scheme(args.scheme_file, result, args.name)
