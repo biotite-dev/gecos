@@ -92,8 +92,8 @@ average difference in :math:`C`:
 
 .. math:: f_s
    = \frac{\left< D \right>}{\left< C \right>}
-   = \frac{ \frac{1}{n} \sum_{ij} D } { \frac{1}{n} \sum_{ij} C }
-   = \frac{ \sum_{ij} D_{ij} } { \sum_{ij} C_{ij} }
+   = \frac{ 1 } { \frac{1}{n} \sum_{ij} C }
+   = \frac{ n } { \sum_{ij} C_{ij} }
 
 As :math:`C` is variable, :math:`f_s` also dynamically changes.
 
