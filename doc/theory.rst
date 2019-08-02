@@ -120,6 +120,9 @@ this term:
 
 .. math:: S_C = \frac{f_c}{\left< C \right>} 
 
+Without this term, there would be no score difference between conformations,
+that use a small or a large part of the color space, as long as the relative
+distances are equal.
 This term drives the symbols to the edges of the color
 space, thereby increasing the contrast.
 
