@@ -2,7 +2,7 @@
 # under the 3-Clause BSD License. Please see 'LICENSE.rst' for further
 # information.
 
-__version__ = "0.2.2"
+__version__ = "0.2.3"
 __author__ = "Patrick Kunzmann"
 
 from .colors import *
