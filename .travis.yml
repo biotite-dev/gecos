@@ -27,7 +27,7 @@ install:
   - conda config --set always_yes yes --set changeps1 no
   - conda update -q conda
 
-  - conda create -q -n gecos-env python=$PY_VERSION; fi
+  - conda create -q -n gecos-env python=$PY_VERSION
   - conda install -n gecos-env  -c conda-forge -c anaconda  biotite numpy matplotlib scikit-image pytest sphinx numpydoc
   - source activate gecos-env
 
@@ -45,7 +45,7 @@ before_deploy:
 deploy:
   provider: releases
   api-key:
-    secure: ncH32tO1V1vJMgpHY/JJ+TDpFkj0uFzNVeD2tBFq+uCDSRzQo8hiC+kFveciQNr9UuKFyqBySFpjP+g93f9xWcjruzTbT42vhoM6YzddMcQI/yiINWoco1Lk8RZpv6HsWeLXPFzP6BWWwBH+1rF09AXX4hk5nHGOlawM+f1nwCoqZrvPc5mhfN/JytRgUjjVZ1yI9VL77wMakGYsuuBpgjpk1AC5bG2X0aCYSRub7kAl3CYPvrknx38pbtL8d9mMyFwLe1UVxuyhY5PZ1hzk+6Dkjwx0mWQ95TCoTOwPU2ECF81gORVd/HZeQ/xRPYb8mlufy+v7pjUgMRQVMwjRR+e3JYHxoAjbN41WUYZohyIeVGnQ9hlaa59EHoDyGL6hJFqJ2o7E5DoKCGE+ssQ/pAmczPMCf3lG4nhgA80WXo9fcchMqPqB1uX43gv+qWvLy3N8V+pzK9nQpUsjKXKROp5fABIaz56APUaq1UrzaAvPHUlNiixjWd7FCU9nDGig8vGSfGNumBUFOQHnS12eQ0ICzTK7z9SuigkEAkB236AiopD5d0fZyyz9hWvWua22wqBD4kwtIQczFos5JHibv1taWdtnxs+/XAJpcV6EWYdTpNEItejRjtPRv20Ddx+G3176aYKbXWrANk/F4sp/HgGaLR7xUiH1wabd6QS5OUE=
+    secure: "OuB/48HCKfl98pv4wCmgnle8WYr2R+VWdQL6Gse3TBslqH4AdF8sOwGxis+WWJRcv/XgmoBEMmnL++N/b1D4/iWEyKYhRR6CrZdYzmL35IqghVRpSVCpHZTUFLZzLKwRBMK0K4dan0Ntur6qBZ6k47li4lY8FT19XzOJsD0Gz8TJA40+q8E+BosVYw6taXa1/xaDnSYEL+Hm0zpPOxCeYlqvIHVDKuL5YyuQs16I80w6wa7AsxDlyrEf6J3EncoPEIRgCKqRvpcy05nuiJOBXS4vUQMBzh8uQkpPOw+C1fWVkxOn5XNSsO+XKUJRxRYInQa9BDUoaLa8SKA3KRuWsgaNZiwyuq7UBWgEaut/+3J6QRJRC6dDz1uSM2EQP0MMvAwrELRykUZtY0WFr2WjWm91AKUZyLCwVNgEX29QKDyY8ranea3UQGBpdMxWw7L+Z9US1Prqzio916p0XuDMQ59BaWKr5upg70p27dCsLPzeSs+201/H6zfxjiv/eiWh4Hw7okudBRqt9BFlGM6aVb062Q3Rvs+OGaecPUSuysUunmVzESw5KDAFWyKMvmwi1ErB0DFx5XVYlkF4iu5VyWE0G4IJpBVjX5H0QP2wlKXHcw5B/HwXqiuZuxBRI1LOwKOOWdxjKdZZPrt8Jimle+Ro2kI48abpYUFbfTYcea8="
   file:
     - dist/*
     - doc/_build/doc.zip
