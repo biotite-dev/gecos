@@ -160,7 +160,7 @@ class ColorOptimizer(object):
             score = self._score_func(coord)
         self._scores.append(score)
     
-    def optimize(self, n_steps, temp, step_size):
+    def optimize(self, n_steps, beta0, beta1, step_size):
         """
         Perform a Metropolis-Monte-Carlo optimization on the current
         coordinates.
@@ -179,6 +179,17 @@ class ColorOptimizer(object):
             The radius in which the coordinates is randomly altered in
             each Monte-Carlo step.
         """
+        
+        #  choose rate so that beta1 reached after n_steps
+        #  derived from beta(N_steps) = beta1
+        if beta0 == beta1:
+            rate = 0
+        else:            
+            rate = np.log(beta1/beta0)/n_steps
+        
+        # annealing schedule        
+        beta = lambda i: beta0*np.exp(rate*i)
+        
         for i in range(n_steps):
             score = self._scores[-1]
             new_coord = self._move(self._coord, step_size)
@@ -186,8 +197,9 @@ class ColorOptimizer(object):
             if new_score < score:
                 self._set_coordinates(new_coord, new_score)
             else:
-                p = np.exp(-(new_score-score) / temp)
-                if p > random.rand():
+                p_accept = np.exp(-beta(i)*(new_score-score))
+                p = random.rand()
+                if p <= p_accept:
                     self._set_coordinates(new_coord, new_score)
                 else:
                     self._set_coordinates(self._coord, new_score)

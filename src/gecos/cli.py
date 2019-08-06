@@ -273,7 +273,7 @@ def main(args=None, result_container=None, show_plots=True):
     nsteps_per_temp = args.nsteps // len(temps)
 
     for temp, step_size in zip(temps, step_sizes): 
-        optimizer.optimize(nsteps_per_temp, temp, step_size)
+        optimizer.optimize(nsteps_per_temp, 1.0/temp, 1.0/temp, step_size)
     result = optimizer.get_result()
 
     write_scheme(args.scheme_file, result, args.name)
@@ -430,5 +430,5 @@ def show_score(ax, scores):
 
 
 def optimize(optimizer, n_steps, temp, step_size):
-    optimizer.optimize(n_steps, temp, step_size)
+    optimizer.optimize(n_steps, 1.0/temp, 1.0/temp, step_size)
     return optimizer
