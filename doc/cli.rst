@@ -44,7 +44,7 @@ Substitution matrix and alphabet
 --------------------------------
 
 An alphabet is defined as the set of symbols a sequence may contain.
-For the unambiguous nucleobase alphabet contains the four symbols
+For example the unambiguous nucleobase alphabet contains the four symbols
 ``A``, ``C``, ``G`` and ``T``.
 
 By default *Gecos* creates a color scheme for the amino acid alphabet based on
