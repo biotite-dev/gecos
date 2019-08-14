@@ -67,10 +67,14 @@ numpydoc_show_class_members = False
 
 html_theme = "alabaster"
 html_static_path = ["static"]
+html_css_files = [
+    "biotite.css",
+    "https://fonts.googleapis.com/css?" \
+        "family=Crete+Round|Fira+Sans|&display=swap",
+]
 html_favicon = "static/assets/general/gecos_icon_32p.png"
 htmlhelp_basename = "GecosDoc"
 html_sidebars = {"**": ["about.html",
-                        #"localtoc.html",
                         "navigation.html",
                         "relations.html",
                         "searchbox.html",

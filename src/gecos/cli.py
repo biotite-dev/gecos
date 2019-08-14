@@ -271,7 +271,6 @@ def main(args=None, result_container=None, show_plots=True):
     # TODO: The integer division might result in a number of actual
     # total steps, differing from the nsteps argument 
     nsteps_per_temp = args.nsteps // len(temps)
-
     for temp, step_size in zip(temps, step_sizes): 
         optimizer.optimize(nsteps_per_temp, temp, step_size)
     result = optimizer.get_result()
