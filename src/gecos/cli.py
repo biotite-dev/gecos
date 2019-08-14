@@ -203,6 +203,12 @@ def main(args=None, result_container=None, show_plots=True):
         metavar="FLOAT",
     )
     opt_group.add_argument(
+        "--rate", default=1, type=float,
+        help="Rate controlling the exponential annealing schedule, "
+             "for the annealing of the inverse temperature.",
+        metavar="FLOAT",
+    )   
+    opt_group.add_argument(
         "--step-size-start", default=20, type=float,
         help="Start step size for simulated annealing algorithm.",
         metavar="FLOAT",
@@ -211,13 +217,7 @@ def main(args=None, result_container=None, show_plots=True):
         "--step-size-end", default=0.1, type=float,
         help="End step size for simulated annealing algorithm.",
         metavar="FLOAT",
-    )
-    opt_group.add_argument(
-        "--rate", default=1, type=float,
-        help="Rate controlling the exponential annealing schedule, "
-             "for the annealing of the inverse temperature.",
-        metavar="FLOAT",
-    )        
+    )     
     
     output_group.add_argument(
         "--scheme-file", "-f",
