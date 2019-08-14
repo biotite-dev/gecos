@@ -343,11 +343,11 @@ def main(args=None, result_container=None, show_plots=True):
     scores_min = np.min(scores, axis=0)
     scores_max = np.max(scores, axis=0)                
     
-    results = np.array([scores_mean, scores_std, scores_min, scores_max])
+    score_results = np.array([scores_mean, scores_std, scores_min, scores_max])
     
     if args.score_file:
         write_score(
-            args.score_file, results,
+            args.score_file, score_results,
             header="avg(score) std(score) min(score) max(score)"
         )
     write_scheme(args.scheme_file, best_result, args.name)
