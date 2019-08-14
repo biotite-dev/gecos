@@ -326,11 +326,11 @@ def main(args=None, result_container=None, show_plots=True):
             args.step_size_start,
             args.step_size_end,
             seeds[i])
-        for i in range(N_parallel)
+        for i in range(n_parallel)
     ]
 
     with Pool(n_parallel) as p:
-        optimizers = p.map(f_run_optimization_sa, optData)
+        optimizers = p.map(f_run_optimization_sa, opt_data)
     best_result = sorted(
         [opt.get_result() for opt in optimizers],
         key=lambda x: x.score
