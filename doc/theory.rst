@@ -145,7 +145,7 @@ The optimization is performed via Simulated-Annealing, which will be described
 afterwards.  The Simulated Annealing algorithm is basically an improved Monte 
 Carlo Optimization Algorithm, which meanssampling the solution space of the 
 optimization problem with a given Temperature :math:`T` or
-rather an inverse temperature :math:`\beta`where 
+rather an inverse temperature :math:`\beta` where 
 
     :math:`\beta = \frac{1}{k_b \cdot T}`
     
