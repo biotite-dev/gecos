@@ -143,29 +143,42 @@ in the alphabet (e.g. 20 for amino acids).
 
 The optimization is performed via Simulated-Annealing, which will be described 
 afterwards.  The Simulated Annealing algorithm is basically an improved Monte 
-Carlo Optimization Algorithm, which meanssampling the solution space of the 
+Carlo Optimization Algorithm, which means sampling the solution space of the 
 optimization problem with a given Temperature :math:`T` or
-rather an inverse temperature :math:`\beta`where 
+rather an inverse temperature :math:`\beta` where :math:`\beta \sim 1/T`.
 
-    :math:`\beta = \frac{1}{k_b \cdot T}`
-    
-with :math:`k_b` being the Boltzmann constant. The improvement of 
-Simulated Annealing over this is to perform the optimization 
-with an initially high temperature, or low inverse temperature accordingly, that
+The improvement of Simulated Annealing over a simple 
+Monte Carlo Optimization Algorithm is to perform the optimization with an 
+initially high temperature, or low inverse temperature accordingly, which 
 is continously cooled down over the course of the algorithms runtime.
-The idea here comes from the physical process of annealing of, e.g., steel where
-you can make the observation that a slowly cooled steel has suprior material characteristics.
+The idea here comes from the physical process of annealing of, e.g., 
+steel where you can make the observation that a slowly 
+cooled steel has suprior material characteristics.
 
-The cooling down is steered by an annealing schedule which in our case is the exponential 
-schedule, so we have
+The cooling down is steered by an annealing schedule which in our case is 
+the exponential schedule, so we have
 
      :math:`\beta(t) = \beta_0 \cdot \exp \left( \tau \cdot t \right)`.
      
-Furthermore, as Simualted Annealing is usually employed for discrete optimization problems in 
-combinatorics, we also use an exponential schedule for the step size steering how     
+Furthermore, as Simualted Annealing is usually employed for combinatorial 
+optimization problems, so problems defined on discrete space, we also use 
+an exponential schedule for the step size 
+    
+    :math:`\delta(n) = \delta_0 \cdot \exp \left( \gamma \cdot t \right)`.
+    
+The step size is used for perturbing the current solution in each step of the
+simulated annealing algorithm to find a new candidate solution. So the idea
+for using the schedule here is to start with relatively large 
+step size :math:`\delta_{start}` and to chose the rate  according to an 
+target step size :math:`\delta_{end}`. An according rate is easily derived 
+by claiming :math:`\delta(N_{max})=\delta_{end}` which leads to
+
+    :math:`\gamma = \frac{1}{N_{max}}\log \left( \frac{\delta_{end}}{\delta_{start}} \right)`         
  
 
-Simulated-Annealing Algorithm:
+**Simulated-Annealing Algorithm**:
+
+
 Starting from a random initial conformation :math:`\vec{x}_0` with a
 score of :math:`S_0 = S_T(\vec{x}_0)`, the following
 steps are performed:
@@ -174,15 +187,9 @@ steps are performed:
       
       :math:`\vec{x}_{n+1} = \vec{x}_n + \Delta(\vec{x}_n)`
 
-      :math:`\Delta(\vec{x}_n)` is a random perturbation according to a radius :math:`\delta(n)`.
-      Here the peturbation radius follows an exponential schedule 
-      
-      :math:`\delta(n) = \delta_0 \cdot \exp \left( \Gamma \cdot t \right)`.
-      
-      Where the user can specify a :math:`\delta_{start}` and a :math:`\delta_{end}` that are used 
-      to set both values in the peturbations schedule accordingly. 
-      So we have :math:`\delta_0 = \delta_{start}` and :math:`\Gamma = \frac{1}{t_{end}}\log \left( \frac{\delta_{end}}{\delta_{start}} \right)`.
-   
+      where :math:`\Delta(\vec{x}_n)` is a random perturbation calculated using
+      the step size :math:`\delta(n)`. 
+  
    2) Calculate the score of the new conformation:
       
       :math:`S_{n+1} = S_T(\vec{x}_{n+1})`
@@ -196,19 +203,22 @@ steps are performed:
       If :math:`\Delta S \leq 0`, then accept the new conformation.
       
       If :math:`\Delta S > 0`, then accept the new conformation with a
-      probability of :math:`p = e^{ \beta(n) \cdot \Delta S }` where :math:`\beta(n)`
+      probability of 
+      :math:`p = exp \left( \beta(n) \cdot \Delta S \right)` where :math:`\beta(n)`
       is the inverse temperature according to the exponential annealing schedule
       
-
       
-      The initial inverse temperature :math:`\beta_0` as well as the rate :math:`\tau`, specifying how
+      The initial inverse temperature :math:`\beta_0` as 
+      well as the rate :math:`\tau`, specifying how
       fast the inverse temperature increases, can be user specified.
       In case the new conformation is not accepted, the new conformation
       is replaced with the conformation prior to modification:
 
       :math:`\vec{x}_{n+1} = \vec{x}_n`
 
-These steps are repeated until an acceptable score has been reached.
+These steps are repeated until an stop criterium is met, which is usually
+just a fixed number of iterations. This is also the case here and the 
+number of iterations can be specified from the commandline via the nsteps
+keyword.
 
-The command line interface uses a special variant, where the temperature is
-stepwise decreased (simulated annealing).
+
