@@ -13,6 +13,8 @@ import biotite.sequence.graphics as graphics
 from .space import ColorSpace
 from .optimizer import ColorOptimizer, DefaultScoreFunction
 from .file import write_color_scheme
+from multiprocessing import Pool
+import itertools
 
 
 FIGURE_WIDTH = 8.0
@@ -36,6 +38,17 @@ def handle_error(func):
 class InputError(Exception):
     pass
 
+
+def f_run_optimization_sa(optline):
+    """
+        worker function used for parallel execution of simulated annealing
+        optimizer with optline being a tuple containing the needed data
+    """             
+    optimizer, nsteps, beta, rate, step_size_start, step_size_end, seed = optline
+    optimizer.set_seed(seed)
+    optimizer.optimize(nsteps, beta, rate, step_size_start, step_size_end)
+
+    return optimizer
 
 @handle_error
 def main(args=None, result_container=None, show_plots=True):
@@ -168,6 +181,39 @@ def main(args=None, result_container=None, show_plots=True):
              "increases at the cost of a longer runtime.",
         metavar="NUMBER"
     )
+
+
+    opt_group.add_argument(
+        "--seed", default=4242, type=float,
+        help="Start seed used for seeding the parallel runs."
+             "A linear seeding strategy is used where each parallel run "
+             " gets his seeds from the range[seed, seed+nruns]",
+        metavar="NUMBER"
+    )
+
+    opt_group.add_argument(
+        "--nruns", default=16, type=int,
+        help="Number of parallel optimization algorithms runs that are to be executed.",
+        metavar="NUMBER"
+    )
+
+    opt_group.add_argument("--beta", default=10**-7, type=float,
+        help="Inverse start temperature for simulated annealing algorithm",
+        metavar="float",
+    )
+    opt_group.add_argument("--step-size-start", default=20, type=float,
+        help="Start step_size for simulated annealing algorithm.",
+        metavar="float",
+    )
+    opt_group.add_argument("--step-size-end", default=0.1, type=float,
+        help="End step_size for simulated annealing algorithm.",
+        metavar="float",
+    )
+    opt_group.add_argument("--rate", default=1, type=float,
+        help="Rate controlling the exponential annealing schedule,"
+             " for the annealing of the inverse temperature. ",
+        metavar="float",
+    )        
     
     output_group.add_argument(
         "--scheme-file", "-f",
@@ -262,56 +308,75 @@ def main(args=None, result_container=None, show_plots=True):
     optimizer = ColorOptimizer(
         matrix.get_alphabet1(), score_func, space, constraints
     )
+
+    benchmark=False
+
+    if benchmark:
+        pass            
+    else:       
     
-    # Simulated annealing:
-    # Temperature and step size are slowly decreased
-    temps      = [100, 80, 60, 40, 20, 10, 8,   6,   4,   2,   1  ]
-    temps = [t*0.02 for t in temps]
-    step_sizes = [10,  8,  6,  4,  2,  1,  0.8, 0.6, 0.4, 0.2, 0.1]
-    # TODO: The integer division might result in a number of actual
-    # total steps, differing from the nsteps argument 
-    nsteps_per_temp = args.nsteps // len(temps)
+        # SA optimizer application here
 
-    for temp, step_size in zip(temps, step_sizes): 
-        optimizer.optimize(nsteps_per_temp, 1.0/temp, 1.0/temp, step_size)
-    result = optimizer.get_result()
+        N_parallel = args.nruns      
+        seeds = np.arange(args.seed, args.seed + N_parallel+1)
+        optimizers = list(itertools.repeat(optimizer, N_parallel))
+        optData = [(optimizers[i], args.nsteps, args.beta, args.rate, args.step_size_start, args.step_size_end, seeds[i]) for i in range(N_parallel)]
+       
 
-    write_scheme(args.scheme_file, result, args.name)
-    if args.score_file:
-        write_score(args.score_file, result)
+        with Pool(N_parallel) as p:
+            optimizers = p.map(f_run_optimization_sa, optData)
+            
+            
+        best_result = sorted([opt.get_result() for opt in optimizers], key=lambda x: x.score)[0]        
 
-    if args.show_space:
-        figure = plt.figure(figsize=(FIGURE_WIDTH, FIGURE_WIDTH))
-        ax = figure.gca()
-        show_space(ax, space, lightness)
-        figure.tight_layout()
-    if args.show_scheme:
-        figure = plt.figure(figsize=(FIGURE_WIDTH, FIGURE_WIDTH))
-        ax = figure.gca()
-        show_scheme(ax, space, result, lightness)
-        figure.tight_layout()
-    if args.show_example:
-        # Check whether a custom non-amino-acid alphabet is used
-        if args.alphabet is not None:
-            raise InputError(
-                "The example alignment can only be shown "
-                "for the amino acid alphabet"
-            )
-        figure = plt.figure(figsize=(FIGURE_WIDTH, 2.5))
-        ax = figure.gca()
-        show_example(ax, result.rgb_colors)
-        figure.tight_layout()
-    if args.show_score:
-        figure = plt.figure(figsize=(FIGURE_WIDTH, 6.0))
-        ax = figure.gca()
-        show_score(ax, result.scores)
-        figure.tight_layout()
-    if show_plots:
-        plt.show()
+#        alphabets = np.array([opt.get_result()[0] for opt in optimizers])
+#        trajectories = np.array([opt.get_result()[1] for opt in optimizers])
+        scores = np.array([opt.get_result()[2] for opt in optimizers])
+        
+        scores_mean = np.mean(scores, axis=0)
+        scores_std = np.std(scores, axis=0)
+        scores_min = np.min(scores, axis=0)
+        scores_max = np.max(scores, axis=0)                
+        
+        results = np.array([scores_mean, scores_std, scores_min, scores_max])
+        
+        if args.score_file:
+            write_score(args.score_file, results, "avg(score) std(score) min(score) max(score)")
+        write_scheme(args.scheme_file, best_result, args.name)
 
-    # In case someone wants to use the CLI results in a Python script
-    if result_container is not None:
-        result_container.append(result)
+    
+        if args.show_space:
+            figure = plt.figure(figsize=(FIGURE_WIDTH, FIGURE_WIDTH))
+            ax = figure.gca()
+            show_space(ax, space, lightness)
+            figure.tight_layout()
+        if args.show_scheme:
+            figure = plt.figure(figsize=(FIGURE_WIDTH, FIGURE_WIDTH))
+            ax = figure.gca()
+            show_scheme(ax, space, best_result, lightness)
+            figure.tight_layout()
+        if args.show_example:
+            # Check whether a custom non-amino-acid alphabet is used
+            if args.alphabet is not None:
+                raise InputError(
+                    "The example alignment can only be shown "
+                    "for the amino acid alphabet"
+                )
+            figure = plt.figure(figsize=(FIGURE_WIDTH, 2.5))
+            ax = figure.gca()
+            show_example(ax, best_result.rgb_colors)
+            figure.tight_layout()
+        if args.show_score:
+            figure = plt.figure(figsize=(FIGURE_WIDTH, 6.0))
+            ax = figure.gca()
+            show_score(ax, best_result.scores)
+            figure.tight_layout()
+        if show_plots:
+            plt.show()
+    
+        # In case someone wants to use the CLI results in a Python script
+        if result_container is not None:
+            result_container.append(best_result)
 
 
 def parse_alphabet(alphabet_str):
@@ -379,8 +444,10 @@ def adjust_b(space, bmin, bmax):
 def write_scheme(file, result, name):
     write_color_scheme(file, result, name)
 
-def write_score(file, result):
-    np.savetxt(file, result.scores, fmt="%.2f")
+
+def write_score(file, results, header=""):    
+    results = np.transpose(results)
+    np.savetxt(file, results, fmt="%.2f", header=header)
 
 
 def show_space(ax, space, lightness):
@@ -430,5 +497,5 @@ def show_score(ax, scores):
 
 
 def optimize(optimizer, n_steps, temp, step_size):
-    optimizer.optimize(n_steps, 1.0/temp, 1.0/temp, step_size)
+    optimizer.optimize(n_steps, temp, step_size)
     return optimizer

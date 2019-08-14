@@ -101,6 +101,9 @@ class ColorOptimizer(object):
         self._coord = None
         self._trajectory = []
         self._scores = []
+#        self._scores_best_so_far = []
+#        self._coord_best_so_far = None
+#        self._score_best_so_far = None  
 
         if constraints is None:
             self._constraints = np.full((self._n_symbols, 3), np.nan)
@@ -128,6 +131,8 @@ class ColorOptimizer(object):
         self._apply_constraints(start_coord)
         self._set_coordinates(start_coord)
 
+
+
     def set_coordinates(self, coord):
         """
         Set the the coordinates of the current color conformation.
@@ -152,6 +157,8 @@ class ColorOptimizer(object):
         coord = coord.copy()
         self._apply_constraints(coord)
         self._set_coordinates(coord)
+
+        
     
     def _set_coordinates(self, coord, score=None):
         self._coord = coord
@@ -159,50 +166,93 @@ class ColorOptimizer(object):
         if score is None:
             score = self._score_func(coord)
         self._scores.append(score)
-    
-    def optimize(self, n_steps, beta0, beta1, step_size):
+                
+#        self.updateBestSoFarSolution(coord, score)
+
+
+
+    def set_seed(self, seed):
+        np.random.seed(seed)
+
+#    def updateBestSoFarSolution(self, coord, score):
+#            
+#        
+#        if (self._score_best_so_far is None) or (score < self._score_best_so_far):
+#            self._score_best_so_far = score
+#            self._coord_best_so_far = coord
+#        
+#        self._scores_best_so_far.append(self._score_best_so_far)
+        
+
+
+    def optimize(self, n_steps, beta_start, rate_beta, stepsize_start, stepsize_end):
         """
-        Perform a Metropolis-Monte-Carlo optimization on the current
-        coordinates.
-        This tries to minimize the score returned by the score function.
+        Perform a Simulated Annealing optimization on the current
+        coordinate to minimize the score returned by the score function.
+        This is basically a Monte-Carlo Optimization where the temperature is varied 
+        according to a so called annealing schedule over the course of the optimization. 
+        The algorithm is a heuristic thats motivated by the physical process of annealing.
+        If we, e.g., cool steel than a slow cooling can yield a superior quality, whereas
+        for a fast cooling the steel can become brittle. The same happens here within the
+        search space for the given minimization task.                              
+        
         
         Parameters
         ----------
         n_steps : int
-            The number of Monte-Carlo steps.
-        temp : float
-            The temperature of the optimization.
-            At higher temperatures, *score barriers* will be more likely
-            overcome, but the optimization will also less likely end in
-            a minimum.
-        step_size : float
-            The radius in which the coordinates is randomly altered in
-            each Monte-Carlo step.
+            The number of Simulated-Annealing steps.
+        beta_start : float
+            The inverse start temperature, where the start Temperatur would be
+            T_start = 1/(k_b*beta_start) with k_b being the boltzmann cosntant.            
+        rate: float
+            The rate controlls how fast the inverse temperature is increads within the
+            annealing schedule. Here the exponential scheduel is chosen
+            so we have $\beta(t) = \beta_0*\exp(rate*t) $
+        
+        stepsize_start : float
+            The radius in which the coordinates are randomly altered at the beginning of
+            the simulated anneling algorithm. Like the inverse temperature
+            the step size follows an exponential schedule, enabling the algorithm
+            to do large perturbartions at the beginning of the algorithm run and 
+            increasingly smaller ones afterwards.
+
+        stepsize_end : float
+            The radius in which the coordinates are randomly altered at the end of the simulated
+            annealing algorithm run.          
         """
-        
-        #  choose rate so that beta1 reached after n_steps
-        #  derived from beta(N_steps) = beta1
-        if beta0 == beta1:
-            rate = 0
-        else:            
-            rate = np.log(beta1/beta0)/n_steps
-        
-        # annealing schedule        
-        beta = lambda i: beta0*np.exp(rate*i)
-        
+
+        rate_stepsize = None
+        beta = lambda i: beta_start*np.exp(rate_beta*i)
+
+        #  choose rate so that stepsize_end reached after n_steps
+        #  derived from step_size(N_steps) = steps_end
+        if stepsize_start == stepsize_end:
+            rate_stepsize = 0
+        else:
+            if stepsize_end is None:
+                rate_stepsize = -1
+            else:            
+                rate_stepsize = np.log(stepsize_end / stepsize_start) / n_steps
+        step_size = lambda i: stepsize_start * np.exp(rate_stepsize * i)
+
         for i in range(n_steps):
+        
             score = self._scores[-1]
-            new_coord = self._move(self._coord, step_size)
+            new_coord = self._move(self._coord, step_size(i))
             new_score = self._score_func(new_coord)
+            
             if new_score < score:
                 self._set_coordinates(new_coord, new_score)
+                
             else:
-                p_accept = np.exp(-beta(i)*(new_score-score))
+                p_accept = np.exp( -beta(i) * (new_score-score))
                 p = random.rand()
+                
                 if p <= p_accept:
                     self._set_coordinates(new_coord, new_score)
                 else:
                     self._set_coordinates(self._coord, new_score)
+                    
 
     def get_result(self):
         """
@@ -214,10 +264,21 @@ class ColorOptimizer(object):
             The result.
         """
         trajectory = np.array(self._trajectory)
+
+        self._scores = np.array(self._scores)
+#        self._scores_best_so_far = np.array(self._scores_best_so_far)
+
+#        scores = np.hstack(
+#                (
+#                self._scores.reshape(self._scores.shape[0], 1), 
+#                self._scores_best_so_far.reshape(self._scores_best_so_far.shape[0], 1)
+#                )
+#        )
+
         return ColorOptimizer.Result(
             alphabet = self._alphabet,
             trajectory = trajectory,
-            scores = np.array(self._scores)
+            scores = self._scores
         )
     
     def _is_allowed(self, coord):
@@ -240,9 +301,11 @@ class ColorOptimizer(object):
         self._apply_constraints(new_coord)
         # Resample coordinates for alphabet symbols
         # when outside of the allowed area
+
         for i in range(new_coord.shape[0]):
             while not self._is_allowed(new_coord[i]):
                 new_coord[i] = coord[i] + (random.rand(3)-0.5) * 2 * step
+
         return new_coord
     
     def _apply_constraints(self, coord):
