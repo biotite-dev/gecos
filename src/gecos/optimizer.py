@@ -186,45 +186,50 @@ class ColorOptimizer(object):
 
 
     def optimize(self, n_steps, beta_start, rate_beta, stepsize_start, stepsize_end):
-        """
+        r"""
         Perform a Simulated Annealing optimization on the current
         coordinate to minimize the score returned by the score function.
-        This is basically a Monte-Carlo Optimization where the temperature is varied 
-        according to a so called annealing schedule over the course of the optimization. 
-        The algorithm is a heuristic thats motivated by the physical process of annealing.
-        If we, e.g., cool steel than a slow cooling can yield a superior quality, whereas
-        for a fast cooling the steel can become brittle. The same happens here within the
-        search space for the given minimization task.                              
         
+        This is basically a Monte-Carlo optimization where the
+        temperature is varied according to a so called annealing
+        schedule over the course of the optimization. 
+        The algorithm is a heuristic thats motivated by the physical
+        process of annealing.
+        If we, e.g., cool steel than a slow cooling can yield a superior
+        quality, whereas for a fast cooling the steel can become
+        brittle.
+        The same happens here within the search space for the given
+        minimization task.                              
         
         Parameters
         ----------
         n_steps : int
             The number of Simulated-Annealing steps.
         beta_start : float
-            The inverse start temperature, where the start Temperatur would be
-            T_start = 1/(k_b*beta_start) with k_b being the boltzmann cosntant.            
+            The inverse start temperature, where the start temperature
+            would be :math:`T_start = 1/(k_b \times \beta_{start})` with
+            :math:`k_b` being the boltzmann constant.            
         rate: float
-            The rate controlls how fast the inverse temperature is increads within the
-            annealing schedule. Here the exponential scheduel is chosen
-            so we have $\beta(t) = \beta_0*\exp(rate*t) $
-        
+            The rate controlls how fast the inverse temperature is
+            increased within the annealing schedule.
+            Here the exponential schedule is chosen so we have
+            :math:`\beta (t) = \beta_0 \times \exp(rate \times t)`.
         stepsize_start : float
-            The radius in which the coordinates are randomly altered at the beginning of
-            the simulated anneling algorithm. Like the inverse temperature
-            the step size follows an exponential schedule, enabling the algorithm
-            to do large perturbartions at the beginning of the algorithm run and 
-            increasingly smaller ones afterwards.
-
+            The radius in which the coordinates are randomly altered at
+            the beginning of the simulated anneling algorithm.
+            Like the inverse temperature the step size follows an
+            exponential schedule, enabling the algorithm
+            to do large perturbartions at the beginning of the algorithm
+            run and  increasingly smaller ones afterwards.
         stepsize_end : float
-            The radius in which the coordinates are randomly altered at the end of the simulated
-            annealing algorithm run.          
+            The radius in which the coordinates are randomly altered at
+            the end of the simulated annealing algorithm run.          
         """
 
         rate_stepsize = None
         beta = lambda i: beta_start*np.exp(rate_beta*i)
 
-        #  choose rate so that stepsize_end reached after n_steps
+        #  Choose rate so that stepsize_end reached after n_steps
         #  derived from step_size(N_steps) = steps_end
         if stepsize_start == stepsize_end:
             rate_stepsize = 0
@@ -264,17 +269,7 @@ class ColorOptimizer(object):
             The result.
         """
         trajectory = np.array(self._trajectory)
-
         self._scores = np.array(self._scores)
-#        self._scores_best_so_far = np.array(self._scores_best_so_far)
-
-#        scores = np.hstack(
-#                (
-#                self._scores.reshape(self._scores.shape[0], 1), 
-#                self._scores_best_so_far.reshape(self._scores_best_so_far.shape[0], 1)
-#                )
-#        )
-
         return ColorOptimizer.Result(
             alphabet = self._alphabet,
             trajectory = trajectory,

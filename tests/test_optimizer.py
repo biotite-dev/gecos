@@ -48,8 +48,8 @@ def test_optimization_score():
     Assert that *n* randomly drawn conformations score worse than an
     optimization with *m* steps.
     """
-    N_RANDOM = 5000
-    N_STEPS = 100
+    N_RANDOM = 10000
+    N_STEPS = 1000
     np.random.seed(0)
     
     matrix = SubstitutionMatrix.std_protein_matrix()
@@ -58,7 +58,7 @@ def test_optimization_score():
     score_func = gecos.DefaultScoreFunction(matrix)
     
     optimizer = gecos.ColorOptimizer(alphabet, score_func, space)
-    optimizer.optimize(N_STEPS, 1, 5)
+    optimizer.optimize(N_STEPS, 1e-7, 1, 20, 0.1)
     optimized_score = optimizer.get_result().score
 
     scores = []
@@ -101,7 +101,7 @@ def test_optimized_distances():
     start_score = score_func(start_coord)
     optimizer = gecos.ColorOptimizer(alph, score_func, space)
     optimizer.set_coordinates(start_coord)
-    optimizer.optimize(N_STEPS, 0.001, 0.05)
+    optimizer.optimize(N_STEPS, 1e-7, 1, 20, 0.1)
     result = optimizer.get_result()
     optimized_coord = result.lab_colors
     optimized_score = result.score
