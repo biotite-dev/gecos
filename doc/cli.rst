@@ -25,7 +25,7 @@ The following table shows which CLI option to use in order to set the lower or
 upper limit of a color space value.
 
 +-------+-------------+-------------+
-|       | Lower limit | Upper Limit |
+|       | Lower limit | Upper limit |
 +=======+=============+=============+
 | *L\** | ``--lmin``  | ``--lmax``  |
 +-------+-------------+-------------+
@@ -68,10 +68,10 @@ Optimization
 Based on the color space, the substitution matrix and the alphabet,
 the optimizer tries to find a color scheme that optimally matches the matrix.
 In order to increase the quality of the scheme tha amount of optimization steps
-(``--nsteps``) or the number of parallel optimization starts (``--nparallel``)
+(``--nsteps``) or the number of parallel optimization starts (``--nruns``)
 can be increased.
 However, increasing these values also extends the runtime of the optimization.
-Note that ``--nparallel`` can take advantage of multiple cores.
+Note that ``--nruns`` can take advantage of multiple cores.
 
 A color can be fixed for a certain symbol by giving a
 (symbol, *L\**, *a\**, *b\**) tuple to the ``--constraint``/``-c`` option
