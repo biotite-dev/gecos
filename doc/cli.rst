@@ -79,7 +79,7 @@ growth (``--rate``). The step size decreases in the course of the simulated
 annealing also in an exponential manner, which can be parameterized via
 ``--step-size-start`` and ``--step-size-end``.
 The seed for the random number generator used by the algorithm is set with
-the `--seed` option.
+the ``--seed`` option.
 However, these parameters address the more advanced users.
 
 A color can be fixed for a certain symbol by giving a
