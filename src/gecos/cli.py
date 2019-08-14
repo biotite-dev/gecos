@@ -315,7 +315,7 @@ def main(args=None, result_container=None, show_plots=True):
     
     # Simulated annealing
     n_parallel = args.nruns      
-    seeds = np.arange(args.seed, args.seed + n_parallel+1)
+    seeds = np.arange(args.seed, args.seed + n_parallel+1, dtype=int)
     optimizers = list(itertools.repeat(optimizer, n_parallel))
     opt_data = [
         (
