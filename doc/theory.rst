@@ -141,21 +141,52 @@ The *L\*a\*b\** values can be described as vector :math:`\vec{x}` with
 :math:`n_s \times 3` dimensions, where :math:`n_s` is the amount of symbols
 in the alphabet (e.g. 20 for amino acids). 
 
-The optimization is performed via Metropolis-Monte-Carlo:
+The optimization is performed via Simulated-Annealing, which will be described 
+afterwards.  The Simulated Annealing algorithm is basically an improved Monte 
+Carlo Optimization Algorithm, which meanssampling the solution space of the 
+optimization problem with a given Temperature :math:`T` or
+rather an inverse temperature :math:`\beta`where 
+
+    :math:`\beta = \frac{1}{k_b \cdot T}`
+    
+with :math:`k_b` being the Boltzmann constant. The improvement of 
+Simulated Annealing over this is to perform the optimization 
+with an initially high temperature, or low inverse temperature accordingly, that
+is continously cooled down over the course of the algorithms runtime.
+The idea here comes from the physical process of annealing of, e.g., steel where
+you can make the observation that a slowly cooled steel has suprior material characteristics.
+
+The cooling down is steered by an annealing schedule which in our case is the exponential 
+schedule, so we have
+
+     :math:`\beta(t) = \beta_0 \cdot \exp \left( \tau \cdot t \right)`.
+     
+Furthermore, as Simualted Annealing is usually employed for discrete optimization problems in 
+combinatorics, we also use an exponential schedule for the step size steering how     
+ 
+
+Simulated-Annealing Algorithm:
 Starting from a random initial conformation :math:`\vec{x}_0` with a
 score of :math:`S_0 = S_T(\vec{x}_0)`, the following
 steps are performed:
 
    1) Perform random modifications on :math:`\vec{x}_n`:
       
-      :math:`\vec{x}_{n+1} = f_M(\vec{x}_n)`
+      :math:`\vec{x}_{n+1} = \vec{x}_n + \Delta(\vec{x}_n)`
 
-      :math:`f_M` is a function that adds a random value within a user-defined
-      radius to :math:`\vec{x}`.
+      :math:`\Delta(\vec{x}_n)` is a random perturbation according to a radius :math:`\delta(n)`.
+      Here the peturbation radius follows an exponential schedule 
+      
+      :math:`\delta(n) = \delta_0 \cdot \exp \left( \Gamma \cdot t \right)`.
+      
+      Where the user can specify a :math:`\delta_{start}` and a :math:`\delta_{end}` that are used 
+      to set both values in the peturbations schedule accordingly. 
+      So we have :math:`\delta_0 = \delta_{start}` and :math:`\Gamma = \frac{1}{t_{end}}\log \left( \frac{\delta_{end}}{\delta_{start}} \right)`.
    
    2) Calculate the score of the new conformation:
       
       :math:`S_{n+1} = S_T(\vec{x}_{n+1})`
+                
    
    3) Decide, whether to accept the new conformation based on the difference
       to the score of the conformation prior to modification:
@@ -165,8 +196,13 @@ steps are performed:
       If :math:`\Delta S \leq 0`, then accept the new conformation.
       
       If :math:`\Delta S > 0`, then accept the new conformation with a
-      probability of :math:`p = e^{ \frac{\Delta S}{T} }` where :math:`T`
-      is the user-supplied temperature parameter.
+      probability of :math:`p = e^{ \beta(n) \cdot \Delta S }` where :math:`\beta(n)`
+      is the inverse temperature according to the exponential annealing schedule
+      
+
+      
+      The initial inverse temperature :math:`\beta_0` as well as the rate :math:`\tau`, specifying how
+      fast the inverse temperature increases, can be user specified.
       In case the new conformation is not accepted, the new conformation
       is replaced with the conformation prior to modification:
 
