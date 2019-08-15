@@ -207,13 +207,13 @@ class ColorOptimizer(object):
             The number of Simulated-Annealing steps.
         beta_start : float
             The inverse start temperature, where the start temperature
-            would be :math:`T_start = 1/(k_b \times \beta_{start})` with
+            would be :math:`T_{start} = 1/(k_b \cdot \beta_{start})` with
             :math:`k_b` being the boltzmann constant.            
         rate: float
             The rate controlls how fast the inverse temperature is
             increased within the annealing schedule.
             Here the exponential schedule is chosen so we have
-            :math:`\beta (t) = \beta_0 \times \exp(rate \times t)`.
+            :math:`\beta (t) = \beta_0 \cdot \exp(rate \cdot t)`.
         stepsize_start : float
             The radius in which the coordinates are randomly altered at
             the beginning of the simulated anneling algorithm.
