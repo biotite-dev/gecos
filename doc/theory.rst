@@ -141,8 +141,7 @@ The *L\*a\*b\** values can be described as vector :math:`\vec{x}` with
 :math:`n_s \times 3` dimensions, where :math:`n_s` is the amount of symbols
 in the alphabet (e.g. 20 for amino acids). 
 
-The optimization is performed via *simulated annealing* (SA), which will
-be described afterwards.
+The optimization is performed via *simulated annealing* (SA).
 The SA algorithm is basically an improved Monte-Carlo
 optimization algorithm, which means sampling the solution space of the 
 optimization problem with a given temperature :math:`T` or
@@ -168,7 +167,7 @@ an exponential schedule for the step size
 .. math:: \delta(n) = \delta_0 \cdot \exp \left( \gamma \cdot t \right).
     
 The step size is used for perturbing the current solution in each step of the
-simulated annealing algorithm to find a new candidate solution.
+SA algorithm to find a new candidate solution.
 So the idea for using the schedule here is to start with relatively large 
 step size :math:`\delta_{start}` and to chose the rate  according to an 
 target step size :math:`\delta_{end}`.
