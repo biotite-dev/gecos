@@ -2,7 +2,7 @@
 # under the 3-Clause BSD License. Please see 'LICENSE.rst' for further
 # information.
 
-__author__ = "Patrick Kunzmann"
+__author__ = "Patrick Kunzmann, Benjamin Mayer"
 __all__ = ["ColorOptimizer", "ScoreFunction", "DefaultScoreFunction"]
 
 from collections import namedtuple
