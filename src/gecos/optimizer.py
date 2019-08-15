@@ -101,9 +101,6 @@ class ColorOptimizer(object):
         self._coord = None
         self._trajectory = []
         self._scores = []
-#        self._scores_best_so_far = []
-#        self._coord_best_so_far = None
-#        self._score_best_so_far = None  
 
         if constraints is None:
             self._constraints = np.full((self._n_symbols, 3), np.nan)
@@ -132,7 +129,6 @@ class ColorOptimizer(object):
         self._set_coordinates(start_coord)
 
 
-
     def set_coordinates(self, coord):
         """
         Set the the coordinates of the current color conformation.
@@ -159,30 +155,16 @@ class ColorOptimizer(object):
         self._set_coordinates(coord)
 
         
-    
     def _set_coordinates(self, coord, score=None):
         self._coord = coord
         self._trajectory.append(coord)
         if score is None:
             score = self._score_func(coord)
         self._scores.append(score)
-                
-#        self.updateBestSoFarSolution(coord, score)
-
 
 
     def set_seed(self, seed):
         np.random.seed(seed)
-
-#    def updateBestSoFarSolution(self, coord, score):
-#            
-#        
-#        if (self._score_best_so_far is None) or (score < self._score_best_so_far):
-#            self._score_best_so_far = score
-#            self._coord_best_so_far = coord
-#        
-#        self._scores_best_so_far.append(self._score_best_so_far)
-        
 
 
     def optimize(self, n_steps, beta_start, rate_beta, stepsize_start, stepsize_end):
