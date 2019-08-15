@@ -141,43 +141,45 @@ The *L\*a\*b\** values can be described as vector :math:`\vec{x}` with
 :math:`n_s \times 3` dimensions, where :math:`n_s` is the amount of symbols
 in the alphabet (e.g. 20 for amino acids). 
 
-The optimization is performed via Simulated-Annealing, which will be described 
-afterwards.  The Simulated Annealing algorithm is basically an improved Monte 
-Carlo Optimization Algorithm, which means sampling the solution space of the 
-optimization problem with a given Temperature :math:`T` or
+The optimization is performed via *simulated annealing* (SA), which will
+be described afterwards.
+The SA algorithm is basically an improved Monte-Carlo
+optimization algorithm, which means sampling the solution space of the 
+optimization problem with a given temperature :math:`T` or
 rather an inverse temperature :math:`\beta` where :math:`\beta \sim 1/T`.
 
-The improvement of Simulated Annealing over a simple 
-Monte Carlo Optimization Algorithm is to perform the optimization with an 
+The improvement of SA over a simple 
+Monte-Carlo optimization algorithm is to perform the optimization with an 
 initially high temperature, or low inverse temperature accordingly, which 
-is continously cooled down over the course of the algorithms runtime.
+is continuously cooled down over the course of the algorithms runtime.
 The idea here comes from the physical process of annealing of, e.g., 
 steel where you can make the observation that a slowly 
-cooled steel has suprior material characteristics.
+cooled steel has superior material characteristics.
 
 The cooling down is steered by an annealing schedule which in our case is 
 the exponential schedule, so we have
 
-     :math:`\beta(t) = \beta_0 \cdot \exp \left( \tau \cdot t \right)`.
+.. math:: \beta(t) = \beta_0 \cdot \exp \left( \tau \cdot t \right).
      
-Furthermore, as Simualted Annealing is usually employed for combinatorial 
+Furthermore, as SA is usually employed for combinatorial 
 optimization problems, so problems defined on discrete space, we also use 
 an exponential schedule for the step size 
     
-    :math:`\delta(n) = \delta_0 \cdot \exp \left( \gamma \cdot t \right)`.
+.. math:: \delta(n) = \delta_0 \cdot \exp \left( \gamma \cdot t \right).
     
 The step size is used for perturbing the current solution in each step of the
-simulated annealing algorithm to find a new candidate solution. So the idea
-for using the schedule here is to start with relatively large 
+simulated annealing algorithm to find a new candidate solution.
+So the idea for using the schedule here is to start with relatively large 
 step size :math:`\delta_{start}` and to chose the rate  according to an 
-target step size :math:`\delta_{end}`. An according rate is easily derived 
-by claiming :math:`\delta(N_{max})=\delta_{end}` which leads to
+target step size :math:`\delta_{end}`.
+An according rate is easily derived  by claiming
+:math:`\delta(N_{max})=\delta_{end}` which leads to
 
-    :math:`\gamma = \frac{1}{N_{max}}\log \left( \frac{\delta_{end}}{\delta_{start}} \right)`         
+.. math:: \gamma = \frac{1}{N_{max}}\log \left( \frac{\delta_{end}}{\delta_{start}} \right).
  
 
-**Simulated-Annealing Algorithm**:
-
+Monte-Carlo algorithm
+^^^^^^^^^^^^^^^^^^^^^
 
 Starting from a random initial conformation :math:`\vec{x}_0` with a
 score of :math:`S_0 = S_T(\vec{x}_0)`, the following
@@ -216,9 +218,7 @@ steps are performed:
 
       :math:`\vec{x}_{n+1} = \vec{x}_n`
 
-These steps are repeated until an stop criterium is met, which is usually
-just a fixed number of iterations. This is also the case here and the 
-number of iterations can be specified from the commandline via the nsteps
-keyword.
+These steps are repeated until an stop criterion is met, which is just a fixed
+number of iterations in this case.
 
 
