@@ -128,7 +128,6 @@ class ColorOptimizer(object):
         self._apply_constraints(start_coord)
         self._set_coordinates(start_coord)
 
-
     def set_coordinates(self, coord):
         """
         Set the the coordinates of the current color conformation.
@@ -162,12 +161,11 @@ class ColorOptimizer(object):
             score = self._score_func(coord)
         self._scores.append(score)
 
-
     def set_seed(self, seed):
         np.random.seed(seed)
 
-
-    def optimize(self, n_steps, beta_start, rate_beta, stepsize_start, stepsize_end):
+    def optimize(self, n_steps,
+                 beta_start, rate_beta, stepsize_start, stepsize_end):
         r"""
         Perform a Simulated Annealing optimization on the current
         coordinate to minimize the score returned by the score function.
@@ -240,7 +238,6 @@ class ColorOptimizer(object):
                 else:
                     self._set_coordinates(self._coord, new_score)
                     
-
     def get_result(self):
         """
         Get the result of the optimization.
