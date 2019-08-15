@@ -113,10 +113,23 @@ class ColorOptimizer(object):
                     )
             self._constraints = constraints.copy()
 
-        ### Set initial conformation ###
-        # Every symbol has the 'l', 'a' and 'b' coordinates
-        # The coordinates are initially filled with values
-        # that are guaranteed to be invalid (l cannot be -1)
+        self._set_initial_coordinate()        
+
+    def _set_initial_coordinate(self):
+        """
+        Set initial conformation 
+        Every symbol has the 'l', 'a' and 'b' coordinates
+        The coordinates are initially filled with values
+        that are guaranteed to be invalid (l cannot be -1)
+
+        This function can also be used to reset the initial coordinate.           
+        """
+
+        # reset data if initial coordinate has been set before
+        self._coord = None
+        self._trajectory = []
+        self._scores = []
+
         start_coord = np.full((self._n_symbols, 3), -1, dtype=float)
         # Chose start position from allowed positions at random
         for i in range(start_coord.shape[0]):
@@ -126,7 +139,7 @@ class ColorOptimizer(object):
                 drawn_coord[..., 1:] *= (MAX_AB-MIN_AB) + MIN_AB
                 start_coord[i] = drawn_coord
         self._apply_constraints(start_coord)
-        self._set_coordinates(start_coord)
+        self._set_coordinates(start_coord)   
 
     def set_coordinates(self, coord):
         """
@@ -162,7 +175,21 @@ class ColorOptimizer(object):
         self._scores.append(score)
 
     def set_seed(self, seed):
+        """
+        
+        This funciton is used to reseed the pseudo random number generator
+        used within this object. Futhermore, the initial coordinate is 
+        reset after reseeding.
+        This way when for example running many optimizers in parallel it is 
+        ensured that the behaviour is deterministic upon setting a seed.
+
+        Parameters
+        ----------
+        seeds : int 
+            The seed used for reseeding the pseudo random number generator.            
+        """
         np.random.seed(seed)
+        self._set_initial_coordinate()
 
     def optimize(self, n_steps,
                  beta_start, rate_beta, stepsize_start, stepsize_end):
