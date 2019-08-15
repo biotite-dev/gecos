@@ -206,7 +206,7 @@ steps are performed:
       If :math:`\Delta S > 0`, then accept the new conformation with a
       probability of 
       :math:`p = exp \left( \beta(n) \cdot \Delta S \right)` where :math:`\beta(n)`
-      is the inverse temperature according to the exponential annealing schedule
+      is the inverse temperature according to the exponential annealing schedule.
       
       
       The initial inverse temperature :math:`\beta_0` as 
