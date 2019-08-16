@@ -191,10 +191,11 @@ def main(args=None, result_container=None, show_plots=True):
 
 
     opt_group.add_argument(
-        "--seed", default=4242, type=float,
+        "--seed", type=float,
         help="Start seed used for seeding the parallel runs. "
              "A linear seeding strategy is used where each parallel run "
-             "gets his seeds from the range[seed, seed+nruns]",
+             "gets his seeds from the range[seed, seed+nruns]. "
+             "By default the seed is chosen randomly.",
         metavar="NUMBER"
     )
     opt_group.add_argument(
@@ -321,7 +322,13 @@ def main(args=None, result_container=None, show_plots=True):
     
     # Simulated annealing
     n_parallel = args.nruns      
-    seeds = np.arange(args.seed, args.seed + n_parallel+1, dtype=int)
+    if args.seed is not None:
+        seed = args.seed
+    else:
+        # Draw seed randomly
+    seed = np.random.randint(1000000)
+    # Different seed for each run
+    seeds = np.arange(args.seed, seed + n_parallel+1, dtype=int)
     opt_data = [
         (
             matrix.get_alphabet1(),
@@ -340,7 +347,6 @@ def main(args=None, result_container=None, show_plots=True):
     with Pool(n_parallel) as p:
         results = p.map(f_run_optimization_sa, opt_data)
     best_result = sorted(results, key=lambda x: x.score)[0]
-    print(best_result.score)
 
     scores = np.array([result.scores for result in results])
     scores_mean = np.mean(scores, axis=0)
