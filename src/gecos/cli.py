@@ -326,9 +326,9 @@ def main(args=None, result_container=None, show_plots=True):
         seed = args.seed
     else:
         # Draw seed randomly
-    seed = np.random.randint(1000000)
+        seed = np.random.randint(1000000)
     # Different seed for each run
-    seeds = np.arange(args.seed, seed + n_parallel+1, dtype=int)
+    seeds = np.arange(seed, seed + n_parallel+1, dtype=int)
     opt_data = [
         (
             matrix.get_alphabet1(),
