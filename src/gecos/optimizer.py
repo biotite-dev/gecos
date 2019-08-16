@@ -30,6 +30,10 @@ class ColorOptimizer(object):
     function by adjusting the *Lab* values (coordinates) for each
     symbol in a given alphabet.
 
+    The optimizer uses the random number generator from *NumPy*.
+    Therefore, call :func:`numpy.random.seed()` to set the seed for the
+    optimizer
+
     Parameters
     ----------
     alphabet : biotite.sequence.Alphabet
