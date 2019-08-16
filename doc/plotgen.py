@@ -67,7 +67,7 @@ def plot_generator(function):
 def plot_main_example_alignment():
     scheme_file = biotite.temp_file("json")
     gecli.main(args=[
-        "--seed", "1",
+        "--seed", "0",
         "--matrix", "BLOSUM62",
         "--lmin", "60",
         "--lmax", "75",
@@ -95,7 +95,7 @@ def plot_no_constraints_scheme_alignment():
 def plot_no_green_scheme_alignment():
     scheme_file = biotite.temp_file("json")
     gecli.main(args=[
-        "--seed", "0",
+        "--seed", "1",
         "--amin", "0",
         "--lmin", "50",
         "--lmax", "80",
@@ -121,7 +121,7 @@ def plot_constrained_scheme_alignment():
     gecli.main(args=[
         "--seed", "0",
         "-c", "A", "70", "0", "0",
-        "-c", "W", "70", "-10", "-40",
+        "-c", "W", "70", "-10", "-45",
         "--lmin", "60",
         "--lmax", "75",
         "-f", scheme_file
@@ -192,6 +192,35 @@ def plot_show_score():
         "-f", scheme_file
     ])
     return plt.gcf()
+
+###############################################################################
+# The protein block substitution matrix, the protein block reference angles
+# and the RSMDA calculation were taken from the PBxplore software,
+# governed by the following license:
+# 
+# 
+# The MIT License (MIT)
+# 
+# Copyright (c) 2013 Poulain, A. G. de Brevern
+# 
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+# 
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+# 
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+###############################################################################
 
 @plot_generator
 def plot_pb_scheme_alignment():

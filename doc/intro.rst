@@ -180,7 +180,7 @@ blue, both with a lightness of ``70``:
 
 .. code-block:: console
 
-   $ gecos -c A 70 0 0 -c W 70 -10 -40 --lmin 60 --lmax 75 -f constrained_scheme.json
+   $ gecos -c A 70 0 0 -c W 70 -10 -45 --lmin 60 --lmax 75 -f constrained_scheme.json
 
 .. image:: /plots/constrained_scheme_alignment.png
 
@@ -284,7 +284,7 @@ option.
 
 In order to demonstrate this, the following example will generate a color scheme
 for the *protein blocks* (PB) alphabet
-(`de Brevern et al., 2000 <https://doi.org/10.1002/1097-0134(20001115)41:3\<271::AID-PROT10\>3.0.CO;2-Z>`_ ).
+(`de Brevern et al., 2000 <https://doi.org/10.1002/1097-0134(20001115)41:3\<271::AID-PROT10\>3.0.CO;2-Z>`_).
 The *Protein blocks* alphabet consists of 16 symbols, from ``a`` to ``p``,
 where each one represents another protein backbone conformation.
 In a nutshell, PBs can be used to encode a molecular 3D structure into a
