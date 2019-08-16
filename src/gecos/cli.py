@@ -321,7 +321,7 @@ def main(args=None, result_container=None, show_plots=True):
     # Simulated annealing
     n_parallel = args.nruns      
     if args.seed is not None:
-        np.random.seed(args.seed)
+        np.random.seed(int(args.seed))
     # Different randomly seed for each run
     seeds = np.random.randint(0, 1000000, size=n_parallel)
     opt_data = [
