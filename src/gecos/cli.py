@@ -43,10 +43,10 @@ def f_run_optimization_sa(optline):
     """
     Worker function used for parallel execution of simulated annealing
     optimizer with optline being a tuple containing the needed data
-    """             
+    """
+    np.random.seed(seed)
     optimizer, nsteps, beta, rate, step_size_start, step_size_end, seed \
         = optline
-    optimizer.set_seed(seed)
     optimizer.optimize(nsteps, beta, rate, step_size_start, step_size_end)
 
     return optimizer

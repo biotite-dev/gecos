@@ -152,7 +152,6 @@ class ColorOptimizer(object):
         coord = coord.copy()
         self._apply_constraints(coord)
         self._set_coordinates(coord)
-
         
     def _set_coordinates(self, coord, score=None):
         self._coord = coord
@@ -160,10 +159,7 @@ class ColorOptimizer(object):
         if score is None:
             score = self._score_func(coord)
         self._scores.append(score)
-
-    def set_seed(self, seed):
-        np.random.seed(seed)
-
+    
     def optimize(self, n_steps,
                  beta_start, rate_beta, stepsize_start, stepsize_end):
         r"""
