@@ -43,13 +43,19 @@ def f_run_optimization_sa(optline):
     """
     Worker function used for parallel execution of simulated annealing
     optimizer with optline being a tuple containing the needed data
-    """             
-    optimizer, nsteps, beta, rate, step_size_start, step_size_end, seed \
-        = optline
-    optimizer.set_seed(seed)
+    """
+    (
+        alphabet, score_func, space, constraints, 
+        nsteps, beta, rate, step_size_start, step_size_end,
+        seed 
+    ) = optline
+    
+    np.random.seed(seed)
+    optimizer = ColorOptimizer(
+        alphabet, score_func, space, constraints
+    )
     optimizer.optimize(nsteps, beta, rate, step_size_start, step_size_end)
-
-    return optimizer
+    return optimizer.get_result()
 
 @handle_error
 def main(args=None, result_container=None, show_plots=True):
@@ -185,10 +191,9 @@ def main(args=None, result_container=None, show_plots=True):
 
 
     opt_group.add_argument(
-        "--seed", default=4242, type=float,
+        "--seed", type=float,
         help="Start seed used for seeding the parallel runs. "
-             "A linear seeding strategy is used where each parallel run "
-             "gets his seeds from the range[seed, seed+nruns]",
+             "By default the seed is chosen randomly.",
         metavar="NUMBER"
     )
     opt_group.add_argument(
@@ -315,11 +320,16 @@ def main(args=None, result_container=None, show_plots=True):
     
     # Simulated annealing
     n_parallel = args.nruns      
-    seeds = np.arange(args.seed, args.seed + n_parallel+1, dtype=int)
-    optimizers = list(itertools.repeat(optimizer, n_parallel))
+    if args.seed is not None:
+        np.random.seed(int(args.seed))
+    # Different randomly seed for each run
+    seeds = np.random.randint(0, 1000000, size=n_parallel)
     opt_data = [
         (
-            optimizers[i],
+            matrix.get_alphabet1(),
+            score_func,
+            space,
+            constraints,
             args.nsteps, 
             args.beta,
             args.rate,
@@ -330,20 +340,17 @@ def main(args=None, result_container=None, show_plots=True):
     ]
 
     with Pool(n_parallel) as p:
-        optimizers = p.map(f_run_optimization_sa, opt_data)
-    best_result = sorted(
-        [opt.get_result() for opt in optimizers],
-        key=lambda x: x.score
-    )[0]        
+        results = p.map(f_run_optimization_sa, opt_data)
+    best_result = sorted(results, key=lambda x: x.score)[0]
 
-    scores = np.array([opt.get_result().scores for opt in optimizers])
-    
+    scores = np.array([result.scores for result in results])
     scores_mean = np.mean(scores, axis=0)
     scores_std = np.std(scores, axis=0)
     scores_min = np.min(scores, axis=0)
     scores_max = np.max(scores, axis=0)                
-    
-    score_results = np.array([scores_mean, scores_std, scores_min, scores_max])
+    score_results = np.array(
+        [scores_mean, scores_std, scores_min, scores_max]
+    )
     
     if args.score_file:
         write_score(
