@@ -10,7 +10,7 @@ according to some kind of properties.
 For example a color scheme for amino acids could use one color for
 hydrophobic residues, another color for positively charged residues
 and so forth.
-Usually, such color schemes are created manually by experienced people
+Usually, such color schemes are manually created by experienced people
 who have knowledge about the characteristics of the e.g. amino acids,
 so they can assign equal or similar colors to amino acids that share
 similar properties.
