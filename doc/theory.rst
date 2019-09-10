@@ -134,7 +134,7 @@ Optimization
 ------------
 
 The purpose of *Gecos* is to find colors that match distances derived from a
-substitution matrix as well as possible.
+substitution matrix as good as possible.
 This means, that the software tries to optimize the *L\*a\*b\** values for all
 symbols, so that the score function described above is minimized.
 The *L\*a\*b\** values can be described as vector :math:`\vec{x}` with
