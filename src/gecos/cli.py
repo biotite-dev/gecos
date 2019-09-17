@@ -416,13 +416,21 @@ def parse_matrix(matrix_str, alphabet):
             return align.SubstitutionMatrix(alphabet, alphabet, matrix_dict)
     else:
         # String is a NCBI matrix name
+        # For user convenience there is no case sensitivity
+        # -> Find fitting matrix
+        matrix_list = align.SubstitutionMatrix.list_db()
         upper_matrix_str = matrix_str.upper()
-        if upper_matrix_str not in align.SubstitutionMatrix.list_db():
+        upper_matrix_list = [
+            m.upper() for m in align.SubstitutionMatrix.list_db()
+        ]
+        try:
+            matrix_str = matrix_list[upper_matrix_list.index(upper_matrix_str)]
+        except:
             raise InputError(
                 f"'{matrix_str}' is neither a file "
                 f"nor a valid NCBI substitution matrix"
             )
-        return align.SubstitutionMatrix(alphabet, alphabet, upper_matrix_str)
+        return align.SubstitutionMatrix(alphabet, alphabet, matrix_str)
 
 
 def adjust_saturation(space, smin, smax):
