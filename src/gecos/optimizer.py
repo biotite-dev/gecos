@@ -2,7 +2,7 @@
 # under the 3-Clause BSD License. Please see 'LICENSE.rst' for further
 # information.
 
-__author__ = "Patrick Kunzmann"
+__author__ = "Patrick Kunzmann, Benjamin Mayer"
 __all__ = ["ColorOptimizer", "ScoreFunction", "DefaultScoreFunction"]
 
 from collections import namedtuple
@@ -29,6 +29,10 @@ class ColorOptimizer(object):
     The optimizer tries to minimize the return value of the score
     function by adjusting the *Lab* values (coordinates) for each
     symbol in a given alphabet.
+
+    The optimizer uses the random number generator from *NumPy*.
+    Therefore, call :func:`numpy.random.seed()` to set the seed for the
+    optimizer
 
     Parameters
     ----------
@@ -152,7 +156,7 @@ class ColorOptimizer(object):
         coord = coord.copy()
         self._apply_constraints(coord)
         self._set_coordinates(coord)
-    
+        
     def _set_coordinates(self, coord, score=None):
         self._coord = coord
         self._trajectory.append(coord)
@@ -160,38 +164,80 @@ class ColorOptimizer(object):
             score = self._score_func(coord)
         self._scores.append(score)
     
-    def optimize(self, n_steps, temp, step_size):
-        """
-        Perform a Metropolis-Monte-Carlo optimization on the current
-        coordinates.
-        This tries to minimize the score returned by the score function.
+    def optimize(self, n_steps,
+                 beta_start, rate_beta, stepsize_start, stepsize_end):
+        r"""
+        Perform a Simulated Annealing optimization on the current
+        coordinate to minimize the score returned by the score function.
+        
+        This is basically a Monte-Carlo optimization where the
+        temperature is varied according to a so called annealing
+        schedule over the course of the optimization. 
+        The algorithm is a heuristic thats motivated by the physical
+        process of annealing.
+        If we, e.g., cool steel than a slow cooling can yield a superior
+        quality, whereas for a fast cooling the steel can become
+        brittle.
+        The same happens here within the search space for the given
+        minimization task.                              
         
         Parameters
         ----------
         n_steps : int
-            The number of Monte-Carlo steps.
-        temp : float
-            The temperature of the optimization.
-            At higher temperatures, *score barriers* will be more likely
-            overcome, but the optimization will also less likely end in
-            a minimum.
-        step_size : float
-            The radius in which the coordinates is randomly altered in
-            each Monte-Carlo step.
+            The number of Simulated-Annealing steps.
+        beta_start : float
+            The inverse start temperature, where the start temperature
+            would be :math:`T_{start} = 1/(k_b \cdot \beta_{start})` with
+            :math:`k_b` being the boltzmann constant.            
+        rate: float
+            The rate controlls how fast the inverse temperature is
+            increased within the annealing schedule.
+            Here the exponential schedule is chosen so we have
+            :math:`\beta (t) = \beta_0 \cdot \exp(rate \cdot t)`.
+        stepsize_start : float
+            The radius in which the coordinates are randomly altered at
+            the beginning of the simulated anneling algorithm.
+            Like the inverse temperature the step size follows an
+            exponential schedule, enabling the algorithm
+            to do large perturbartions at the beginning of the algorithm
+            run and  increasingly smaller ones afterwards.
+        stepsize_end : float
+            The radius in which the coordinates are randomly altered at
+            the end of the simulated annealing algorithm run.          
         """
+
+        rate_stepsize = None
+        beta = lambda i: beta_start*np.exp(rate_beta*i)
+
+        #  Choose rate so that stepsize_end reached after n_steps
+        #  derived from step_size(N_steps) = steps_end
+        if stepsize_start == stepsize_end:
+            rate_stepsize = 0
+        else:
+            if stepsize_end is None:
+                rate_stepsize = -1
+            else:            
+                rate_stepsize = np.log(stepsize_end / stepsize_start) / n_steps
+        step_size = lambda i: stepsize_start * np.exp(rate_stepsize * i)
+
         for i in range(n_steps):
+        
             score = self._scores[-1]
-            new_coord = self._move(self._coord, step_size)
+            new_coord = self._move(self._coord, step_size(i))
             new_score = self._score_func(new_coord)
+            
             if new_score < score:
                 self._set_coordinates(new_coord, new_score)
+                
             else:
-                p = np.exp(-(new_score-score) / temp)
-                if p > random.rand():
+                p_accept = np.exp( -beta(i) * (new_score-score))
+                p = random.rand()
+                
+                if p <= p_accept:
                     self._set_coordinates(new_coord, new_score)
                 else:
                     self._set_coordinates(self._coord, new_score)
-
+                    
     def get_result(self):
         """
         Get the result of the optimization.
@@ -202,10 +248,11 @@ class ColorOptimizer(object):
             The result.
         """
         trajectory = np.array(self._trajectory)
+        self._scores = np.array(self._scores)
         return ColorOptimizer.Result(
             alphabet = self._alphabet,
             trajectory = trajectory,
-            scores = np.array(self._scores)
+            scores = self._scores
         )
     
     def _is_allowed(self, coord):
@@ -228,9 +275,11 @@ class ColorOptimizer(object):
         self._apply_constraints(new_coord)
         # Resample coordinates for alphabet symbols
         # when outside of the allowed area
+
         for i in range(new_coord.shape[0]):
             while not self._is_allowed(new_coord[i]):
                 new_coord[i] = coord[i] + (random.rand(3)-0.5) * 2 * step
+
         return new_coord
     
     def _apply_constraints(self, coord):

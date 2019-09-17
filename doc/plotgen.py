@@ -65,9 +65,9 @@ def plot_generator(function):
 
 @plot_generator
 def plot_main_example_alignment():
-    random.seed(4)
     scheme_file = biotite.temp_file("json")
     gecli.main(args=[
+        "--seed", "0",
         "--matrix", "BLOSUM62",
         "--lmin", "60",
         "--lmax", "75",
@@ -87,16 +87,15 @@ def plot_example_space():
 
 @plot_generator
 def plot_no_constraints_scheme_alignment():
-    random.seed(0)
     scheme_file = biotite.temp_file("json")
-    gecli.main(args=["-f", scheme_file])
+    gecli.main(args=["--seed", "0", "-f", scheme_file])
     return show_alignment(scheme_file)
 
 @plot_generator
 def plot_no_green_scheme_alignment():
-    random.seed(0)
     scheme_file = biotite.temp_file("json")
     gecli.main(args=[
+        "--seed", "1",
         "--amin", "0",
         "--lmin", "50",
         "--lmax", "80",
@@ -106,9 +105,9 @@ def plot_no_green_scheme_alignment():
 
 @plot_generator
 def plot_high_saturation_scheme_alignment():
-    random.seed(1)
     scheme_file = biotite.temp_file("json")
     gecli.main(args=[
+        "--seed", "1",
         "--smin", "30",
         "--lmin", "55",
         "--lmax", "75",
@@ -118,11 +117,11 @@ def plot_high_saturation_scheme_alignment():
 
 @plot_generator
 def plot_constrained_scheme_alignment():
-    random.seed(0)
     scheme_file = biotite.temp_file("json")
     gecli.main(args=[
+        "--seed", "0",
         "-c", "A", "70", "0", "0",
-        "-c", "W", "70", "-10", "-40",
+        "-c", "W", "70", "-10", "-45",
         "--lmin", "60",
         "--lmax", "75",
         "-f", scheme_file
@@ -131,9 +130,9 @@ def plot_constrained_scheme_alignment():
 
 @plot_generator
 def plot_high_contrast_scheme_alignment():
-    random.seed(0)
     scheme_file = biotite.temp_file("json")
     gecli.main(args=[
+        "--seed", "0",
         "--contrast", "2000",
         "--lmin", "60",
         "--lmax", "75",
@@ -143,9 +142,9 @@ def plot_high_contrast_scheme_alignment():
 
 @plot_generator
 def plot_show_space():
-    random.seed(0)
     scheme_file = biotite.temp_file("json")
     gecli.main(args=[
+        "--seed", "0",
         "--show-space",
         "--dry-run",
         "--smin", "30",
@@ -157,9 +156,9 @@ def plot_show_space():
 
 @plot_generator
 def plot_show_scheme():
-    random.seed(0)
     scheme_file = biotite.temp_file("json")
     gecli.main(args=[
+        "--seed", "0",
         "--show-scheme",
         "--smin", "30",
         "--lmin", "60",
@@ -170,9 +169,9 @@ def plot_show_scheme():
 
 @plot_generator
 def plot_show_example():
-    random.seed(0)
     scheme_file = biotite.temp_file("json")
     gecli.main(args=[
+        "--seed", "0",
         "--show-example",
         "--smin", "30",
         "--lmin", "60",
@@ -183,9 +182,9 @@ def plot_show_example():
 
 @plot_generator
 def plot_show_score():
-    random.seed(0)
     scheme_file = biotite.temp_file("json")
     gecli.main(args=[
+        "--seed", "0",
         "--show-score",
         "--smin", "30",
         "--lmin", "60",
@@ -194,9 +193,37 @@ def plot_show_score():
     ])
     return plt.gcf()
 
+###############################################################################
+# The protein block substitution matrix, the protein block reference angles
+# and the RSMDA calculation were taken from the PBxplore software,
+# governed by the following license:
+# 
+# 
+# The MIT License (MIT)
+# 
+# Copyright (c) 2013 Poulain, A. G. de Brevern
+# 
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+# 
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+# 
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+###############################################################################
+
 @plot_generator
 def plot_pb_scheme_alignment():
-    random.seed(1)
     scheme_file = biotite.temp_file("json")
     mat_file = biotite.temp_file("mat")
     with open(mat_file, "w") as file:
@@ -223,6 +250,7 @@ def plot_pb_scheme_alignment():
             """
         )
     gecli.main(args=[
+        "--seed", "0",
         "--alphabet", "abcdefghijklmnop",
         "--matrix", mat_file,
         "--contrast", "300",

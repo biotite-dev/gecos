@@ -25,7 +25,7 @@ The following table shows which CLI option to use in order to set the lower or
 upper limit of a color space value.
 
 +-------+-------------+-------------+
-|       | Lower limit | Upper Limit |
+|       | Lower limit | Upper limit |
 +=======+=============+=============+
 | *L\** | ``--lmin``  | ``--lmax``  |
 +-------+-------------+-------------+
@@ -68,10 +68,19 @@ Optimization
 Based on the color space, the substitution matrix and the alphabet,
 the optimizer tries to find a color scheme that optimally matches the matrix.
 In order to increase the quality of the scheme tha amount of optimization steps
-(``--nsteps``) or the number of parallel optimization starts (``--nparallel``)
+(``--nsteps``) or the number of parallel optimization starts (``--nruns``)
 can be increased.
 However, increasing these values also extends the runtime of the optimization.
-Note that ``--nparallel`` can take advantage of multiple cores.
+Note that ``--nruns`` can take advantage of multiple cores.
+
+The simulated annealing can be adjusted even more fine grained by setting
+the initial reverse temperature (``--beta``) and the rate of its exponential
+growth (``--rate``). The step size decreases in the course of the simulated
+annealing also in an exponential manner, which can be parameterized via
+``--step-size-start`` and ``--step-size-end``.
+The seed for the random number generator used by the algorithm is set with
+the ``--seed`` option.
+However, these parameters address the more advanced users.
 
 A color can be fixed for a certain symbol by giving a
 (symbol, *L\**, *a\**, *b\**) tuple to the ``--constraint``/``-c`` option
