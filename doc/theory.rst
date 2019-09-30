@@ -9,7 +9,7 @@ Color space
 -----------
 
 *Gecos* utilizes *CIE L\*a\*b\**, a color space that is designed to be
-perceptually linear:
+perceptually uniform:
 Changes of *L\*a\*b\** component values scale approximately linearly with the
 visually perceived change of the corresponding color.
 The *L\*a\*b\** color space contains the following components:
@@ -25,7 +25,7 @@ The values for *a\** and *b\** are theoretically not limited in either
 direction, but only a subspace (*gamut*) can be displayed on devices and can
 be converted into *RGB*.
 
-Due to the perceptual linearity, the perceptual difference of two *L\*a\*b\**
+Due to the perceptual uniformity, the perceptual difference of two *L\*a\*b\**
 colors is approximately the euclidean distance of the *L\*a\*b\** components,
 according to the *CIE76* formula.
 Newer standards apply several corrections to the euclidean distance to deal
@@ -66,7 +66,7 @@ Construction of distance matrix
 For both score terms it is required that the input substitution matrix
 :math:`M` is converted into a triangular distance matrix :math:`D'`:
 
-.. math:: D'_{ij} = \left( (S_{ii} - S_{ij}) + (S_{jj} - S_{ji}) \right) / 2 
+.. math:: D'_{ij} = \left( (M_{ii} - M_{ij}) + (M_{jj} - M_{ji}) \right) / 2 
 
 For any substitution matrix :math:`M`, :math:`M_{ii}` should be the maximum
 value in the row/column :math:`i`,
