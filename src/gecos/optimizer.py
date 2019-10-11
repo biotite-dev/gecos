@@ -350,7 +350,7 @@ class DefaultScoreFunction(ScoreFunction):
         distance matrix.
     contrast : int, optional
         A weight for the *contrast score*.
-    distance_measure : {'CIE76', 'CIEDE94', 'CIEDE2000'}, optional
+    distance_formula : {'CIE76', 'CIEDE94', 'CIEDE2000'}, optional
         The formula to use for calculation of perceptual color
         difference.
         While ``'CIEDE2000'`` is the most accurate formula for the
@@ -358,23 +358,23 @@ class DefaultScoreFunction(ScoreFunction):
         calculation.
     """
 
-    def __init__(self, matrix, contrast=1000, distance_measure="CIEDE2000"):
+    def __init__(self, matrix, contrast=1000, distance_formula="CIEDE2000"):
         if not matrix.is_symmetric():
             raise ValueError("Substitution matrix must be symmetric")
         super().__init__(len(matrix.get_alphabet1()))
         self._matrix = self._calculate_distance_matrix(matrix)
         self._n = DefaultScoreFunction._n_pairs(len(matrix.score_matrix()))
         self._contrast = contrast
-        if distance_measure not in ["CIE76", "CIEDE94", "CIEDE2000"]:
+        if distance_formula not in ["CIE76", "CIEDE94", "CIEDE2000"]:
             raise ValueError(
                 f"Unknown color distance measure f'{distance_measure}'"
             )
-        self._distance_measure = distance_measure
+        self._distance_formula = distance_formula
     
     def __call__(self, coord):
         super().__call__(coord)
         dist = DefaultScoreFunction._calculate_distance(
-            coord, self._distance_measure
+            coord, self._distance_formula
         )
         dist_sum = np.sum(dist)
         # This factor translates visual distances
@@ -389,15 +389,15 @@ class DefaultScoreFunction(ScoreFunction):
         return harmonic_score + contrast_score
     
     @staticmethod
-    def _calculate_distance(coord, distance_measure):
+    def _calculate_distance(coord, distance_formula):
         ind1, ind2 = np.tril_indices(len(coord), k=-1)
         flat_coord1 = coord[ind1]
         flat_coord2 = coord[ind2]
-        if distance_measure == "CIEDE76":
+        if distance_formula == "CIEDE76":
             flat_dist = skimage.color.deltaE_ciede94(
                 flat_coord1, flat_coord2
             )
-        elif distance_measure == "CIEDE94":
+        elif distance_formula == "CIEDE94":
             flat_dist = skimage.color.deltaE_cie76(
                 flat_coord1, flat_coord2
             )
