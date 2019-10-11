@@ -68,8 +68,7 @@ Optimization
 Based on the color space, the substitution matrix and the alphabet,
 the optimizer tries to find a color scheme that optimally matches the matrix.
 In order to increase the quality of the scheme tha amount of optimization steps
-(``--nsteps``) or the number of parallel optimization starts (``--nruns``)
-can be increased.
+(``--nsteps``) or the number of runs (``--nruns``) can be increased.
 However, increasing these values also extends the runtime of the optimization.
 Note that ``--nruns`` can take advantage of multiple cores.
 
@@ -90,6 +89,11 @@ In addition to the relative color difference the optimizer also tries to find
 a scheme with a high contrast. The weighting of the importance of the contrast
 is adjusted with ``--contrast``.
 
+The formula used for calculation of perceptual color differences
+(:math:`\Delta E`) can be set via the ``--delta`` option.
+While the default formula ``'CIEDE2000'`` yields the most accurate results,
+``'CIE76'`` features the fastest calculation.
+
 
 Output files
 ------------
@@ -109,16 +113,16 @@ Visualization
 space or a generated color scheme:
 
 +---------------------+----------------------------------------------------------------------------------+
-| ``--show_space``    | Shows the color space, including the user-supplied limitations.                  |
+| ``--show-space``    | Shows the color space, including the user-supplied limitations.                  |
 +---------------------+----------------------------------------------------------------------------------+
-| ``--show_scheme``   | Shows conformation of symbols in the selected color space.                       |
+| ``--show-scheme``   | Shows conformation of symbols in the selected color space.                       |
 +---------------------+----------------------------------------------------------------------------------+
-| ``--show_score``    | Shows the score values throughout the simulation.                                |
+| ``--show-score``    | Shows the score values throughout the simulation.                                |
 +---------------------+----------------------------------------------------------------------------------+
-| ``--show_example``  | Shows an example multiple protein sequence alignment using the new color scheme. |
+| ``--show-example``  | Shows an example multiple protein sequence alignment using the new color scheme. |
 |                     | Cannot be combined with a custom alphabet.                                       |
 +---------------------+----------------------------------------------------------------------------------+
 
-``--show_space`` and ``--show_scheme`` show a 2D *a\*b\** cross section of the
+``--show-space`` and ``--show-scheme`` show a 2D *a\*b\** cross section of the
 3D color space.
 The *L\** value of this section is set with ``--lightness``/``-l``.

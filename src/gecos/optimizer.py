@@ -8,6 +8,7 @@ __all__ = ["ColorOptimizer", "ScoreFunction", "DefaultScoreFunction"]
 from collections import namedtuple
 import abc
 import copy
+import skimage
 import numpy as np
 import numpy.random as random
 import biotite.sequence as seq
@@ -349,24 +350,32 @@ class DefaultScoreFunction(ScoreFunction):
         distance matrix.
     contrast : int, optional
         A weight for the *contrast score*.
+    distance_measure : {'CIE76', 'CIEDE94', 'CIEDE2000'}, optional
+        The formula to use for calculation of perceptual color
+        difference.
+        While ``'CIEDE2000'`` is the most accurate formula for the
+        perceptual difference, ``'CIE76'`` features the fastest
+        calculation.
     """
 
-    def __init__(self, matrix, contrast=500):
+    def __init__(self, matrix, contrast=500, distance_measure="CIEDE2000"):
         if not matrix.is_symmetric():
             raise ValueError("Substitution matrix must be symmetric")
         super().__init__(len(matrix.get_alphabet1()))
         self._matrix = self._calculate_distance_matrix(matrix)
         self._n = DefaultScoreFunction._n_pairs(len(matrix.score_matrix()))
         self._contrast = contrast
+        if distance_measure not in ["CIE76", "CIEDE94", "CIEDE2000"]:
+            raise ValueError(
+                f"Unknown color distance measure f'{distance_measure}'"
+            )
+        self._distance_measure = distance_measure
     
     def __call__(self, coord):
         super().__call__(coord)
-        dist = np.sqrt(
-            np.sum(
-                (coord[:, np.newaxis, :] - coord[np.newaxis, :, :])**2, axis=-1
-            )
+        dist = DefaultScoreFunction._calculate_distance(
+            coord, self._distance_measure
         )
-        dist = np.tril(dist)
         dist_sum = np.sum(dist)
         # This factor translates visual distances
         # into substitution matrix distances
@@ -378,7 +387,28 @@ class DefaultScoreFunction(ScoreFunction):
         mean_dist = dist_sum / DefaultScoreFunction._n_pairs(len(dist))
         contrast_score = self._contrast / mean_dist
         return harmonic_score + contrast_score
-        
+    
+    @staticmethod
+    def _calculate_distance(coord, distance_measure):
+        ind1, ind2 = np.tril_indices(len(coord), k=-1)
+        flat_coord1 = coord[ind1]
+        flat_coord2 = coord[ind2]
+        if distance_measure == "CIEDE76":
+            flat_dist = skimage.color.deltaE_ciede94(
+                flat_coord1, flat_coord2
+            )
+        elif distance_measure == "CIEDE94":
+            flat_dist = skimage.color.deltaE_cie76(
+                flat_coord1, flat_coord2
+            )
+        else: #"CIEDE2000"
+            flat_dist = skimage.color.deltaE_ciede2000(
+                flat_coord1, flat_coord2
+            )
+        dist = np.ones((len(coord),)*2)
+        dist[ind1, ind2] = flat_dist
+        return dist
+
     @staticmethod
     def _calculate_distance_matrix(similarity_matrix):
         scores = similarity_matrix.score_matrix()
