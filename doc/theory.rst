@@ -9,7 +9,7 @@ Color space
 -----------
 
 *Gecos* utilizes *CIE L\*a\*b\**, a color space that is designed to be
-perceptually uniform:
+perceptually approximately uniform:
 Changes of *L\*a\*b\** component values scale approximately linearly with the
 visually perceived change of the corresponding color.
 The *L\*a\*b\** color space contains the following components:
@@ -30,11 +30,11 @@ colors is approximately the euclidean distance of the *L\*a\*b\** components,
 according to the *CIE76* formula.
 Newer standards apply several corrections to the euclidean distance to deal
 with perceptual non-uniformities.
-However, *Gecos* still uses the simple euclidean distance as it can be
-calculated very fast, which is crucial in the optimization process.
+By default, *Gecos* uses the *CIEDE2000* formula, the latest iteration
+of the perceptual difference formula.
 
 *Gecos* uses the package *scikit-image* for all kinds of color space
-conversions.
+conversions and perceptual difference calculation.
 
 .. _score_function: 
 
@@ -82,7 +82,11 @@ Perceptual difference matrix
 
 On the other side the triangular matrix :math:`C` denotes the pairwise
 perceptual differences of the *L\*a\*b\** color for each pair of symbols.
-The perceptual difference is approximated as the euclidean distance:
+
+According to the *CIE76* formula, the perceptual difference is the euclidean
+distance.
+For the sake of simplicity the exact formula of the more modern
+*CIEDE2000* formula is omitted here.
 
 .. math:: C_{ij} = \sqrt{(L^*_i - L^*_j)^2 + (a^*_i - a^*_j)^2 + (b^*_i - b^*_j)^2}
 

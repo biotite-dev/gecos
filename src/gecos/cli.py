@@ -106,38 +106,38 @@ def main(args=None, result_container=None, show_plots=True):
     space_group.add_argument(
         "--smax", type=int,
         help="All colors in the space must "
-            "have the specified saturation at maximum "
-            "(a^2 + b^2 <= smax^2).",
+             "have the specified saturation at maximum "
+             "(a^2 + b^2 <= smax^2).",
         metavar="S"
     )
     space_group.add_argument(
         "--lmin", type=int,
         help="All colors in the space must "
-            "have the specified lightness at minimum.",
+             "have the specified lightness at minimum.",
         metavar="L"
     )
     space_group.add_argument(
         "--lmax", type=int,
         help="All colors in the space must "
-            "have the specified lightness at maximum.",
+             "have the specified lightness at maximum.",
         metavar="L"
     )
     space_group.add_argument(
         "--amin", type=int,
         help="All colors in the space must "
-            "have the specified 'a*' value at minimum.",
+             "have the specified 'a*' value at minimum.",
         metavar="A"
     )
     space_group.add_argument(
         "--amax", type=int,
         help="All colors in the space must "
-            "have the specified 'a*' value at maximum.",
+             "have the specified 'a*' value at maximum.",
         metavar="A"
     )
     space_group.add_argument(
         "--bmin", type=int,
         help="All colors in the space must "
-            "have the specified 'b*' value at minimum.",
+             "have the specified 'b*' value at minimum.",
         metavar="B"
     )
     space_group.add_argument(
@@ -164,7 +164,7 @@ def main(args=None, result_container=None, show_plots=True):
     )
 
     opt_group.add_argument(
-        "--contrast", default=500, type=int,
+        "--contrast", default=700, type=int,
         help="The contrast factor controls how strongly the symbols are "
              "pushed to the edges of the color space. "
              "At the minimum value '0' contrast is not rewarded.",
@@ -188,8 +188,13 @@ def main(args=None, result_container=None, show_plots=True):
              "increases at the cost of a longer runtime.",
         metavar="NUMBER"
     )
-
-
+    opt_group.add_argument(
+        "--delta", default="CIEDE2000",
+        choices=["CIE76", "CIEDE94", "CIEDE2000"],
+        help="The formula to use for the calculation of perceptual "
+             "differences.",
+        metavar="FORMULA"
+    )
     opt_group.add_argument(
         "--seed", type=float,
         help="Start seed used for seeding the parallel runs. "
@@ -313,7 +318,7 @@ def main(args=None, result_container=None, show_plots=True):
         for symbol, l, a, b in args.constraint:
             constraints[alphabet.encode(symbol)] = (l,a,b)
     
-    score_func = DefaultScoreFunction(matrix, args.contrast)
+    score_func = DefaultScoreFunction(matrix, args.contrast, args.delta)
     optimizer = ColorOptimizer(
         matrix.get_alphabet1(), score_func, space, constraints
     )    

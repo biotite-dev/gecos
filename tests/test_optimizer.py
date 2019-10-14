@@ -90,7 +90,9 @@ def test_optimized_distances():
     ]
     matrix = SubstitutionMatrix(alph, alph, np.array(score_matrix))
     # Contrast factor is 0 to optimize only for pairwise distances
-    score_func = gecos.DefaultScoreFunction(matrix, contrast=0)
+    score_func = gecos.DefaultScoreFunction(
+        matrix, contrast=0, distance_formula="CIE76"
+    )
     distance_matrix = score_func._matrix
     a_to_b_ref = distance_matrix[1,0]
     a_to_c_ref = distance_matrix[2,0]
@@ -101,7 +103,7 @@ def test_optimized_distances():
     start_score = score_func(start_coord)
     optimizer = gecos.ColorOptimizer(alph, score_func, space)
     optimizer.set_coordinates(start_coord)
-    optimizer.optimize(N_STEPS, 1e-7, 1, 20, 0.1)
+    optimizer.optimize(N_STEPS, 1e-7, 1, 20, 0.01)
     result = optimizer.get_result()
     optimized_coord = result.lab_colors
     optimized_score = result.score

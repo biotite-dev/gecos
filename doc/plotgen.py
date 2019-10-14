@@ -88,14 +88,14 @@ def plot_example_space():
 @plot_generator
 def plot_no_constraints_scheme_alignment():
     scheme_file = biotite.temp_file("json")
-    gecli.main(args=["--seed", "0", "-f", scheme_file])
+    gecli.main(args=["--seed", "1", "-f", scheme_file])
     return show_alignment(scheme_file)
 
 @plot_generator
 def plot_no_green_scheme_alignment():
     scheme_file = biotite.temp_file("json")
     gecli.main(args=[
-        "--seed", "1",
+        "--seed", "0",
         "--amin", "0",
         "--lmin", "50",
         "--lmax", "80",
@@ -107,7 +107,7 @@ def plot_no_green_scheme_alignment():
 def plot_high_saturation_scheme_alignment():
     scheme_file = biotite.temp_file("json")
     gecli.main(args=[
-        "--seed", "1",
+        "--seed", "0",
         "--smin", "30",
         "--lmin", "55",
         "--lmax", "75",

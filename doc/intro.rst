@@ -14,11 +14,11 @@ the respective distances calculated from a substitution matrix.
 There are dozens of different color spaces with *RGB* probably being the most
 common one.
 Despite its popularity, the *RGB* color space does not do well when it comes
-to perceptual linearity:
+to perceptual uniformity:
 Changing an *RGB* color value by a particular amount does not result in a
 visual difference of the same amount.
 Due to this issue *Gecos* uses the *CIE L\*a\*b\** color space instead, that
-behaves perceptually approximately linear.
+behaves perceptually approximately uniform.
 The color space consists of three components:
 
    - **L\*** - The lightness of the color. ``0`` is completely black and
@@ -250,7 +250,7 @@ The white area shows the allowed color space at the given lightness:
 .. image:: /plots/show_scheme.png
 
 Some symbols might seem to be outside of the allowed space, but remember
-that the white area is only the allowed space at the given lightness.
+that the white area is only the allowed space at the displayed lightness.
 
 The ``--show-example`` options shows an example multiple protein
 sequence alignment with the color scheme.
