@@ -201,7 +201,7 @@ class ColorOptimizer(object):
             Like the inverse temperature the step size follows an
             exponential schedule, enabling the algorithm
             to do large perturbartions at the beginning of the algorithm
-            run and  increasingly smaller ones afterwards.
+            run and increasingly smaller ones afterwards.
         stepsize_end : float
             The radius in which the coordinates are randomly altered at
             the end of the simulated annealing algorithm run.          
@@ -405,7 +405,7 @@ class DefaultScoreFunction(ScoreFunction):
             flat_dist = skimage.color.deltaE_ciede2000(
                 flat_coord1, flat_coord2
             )
-        dist = np.ones((len(coord),)*2)
+        dist = np.zeros((len(coord),)*2)
         dist[ind1, ind2] = flat_dist
         return dist
 
