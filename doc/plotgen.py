@@ -88,14 +88,14 @@ def plot_example_space():
 @plot_generator
 def plot_no_constraints_scheme_alignment():
     scheme_file = biotite.temp_file("json")
-    gecli.main(args=["--seed", "0", "-f", scheme_file])
+    gecli.main(args=["--seed", "1", "-f", scheme_file])
     return show_alignment(scheme_file)
 
 @plot_generator
 def plot_no_green_scheme_alignment():
     scheme_file = biotite.temp_file("json")
     gecli.main(args=[
-        "--seed", "1",
+        "--seed", "2",
         "--amin", "0",
         "--lmin", "50",
         "--lmax", "80",
@@ -107,7 +107,7 @@ def plot_no_green_scheme_alignment():
 def plot_high_saturation_scheme_alignment():
     scheme_file = biotite.temp_file("json")
     gecli.main(args=[
-        "--seed", "1",
+        "--seed", "0",
         "--smin", "30",
         "--lmin", "55",
         "--lmax", "75",
@@ -119,7 +119,7 @@ def plot_high_saturation_scheme_alignment():
 def plot_constrained_scheme_alignment():
     scheme_file = biotite.temp_file("json")
     gecli.main(args=[
-        "--seed", "0",
+        "--seed", "1",
         "-c", "A", "70", "0", "0",
         "-c", "W", "70", "-10", "-45",
         "--lmin", "60",
@@ -132,7 +132,7 @@ def plot_constrained_scheme_alignment():
 def plot_high_contrast_scheme_alignment():
     scheme_file = biotite.temp_file("json")
     gecli.main(args=[
-        "--seed", "0",
+        "--seed", "1",
         "--contrast", "2000",
         "--lmin", "60",
         "--lmax", "75",
@@ -253,7 +253,7 @@ def plot_pb_scheme_alignment():
         "--seed", "0",
         "--alphabet", "abcdefghijklmnop",
         "--matrix", mat_file,
-        "--contrast", "300",
+        "--contrast", "200",
         "--lmin", "65",
         "--lmax", "70",
         "-f", scheme_file

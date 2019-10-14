@@ -295,6 +295,6 @@ PB alphabet and the PB substitution matrix (stored in the file ``PB.mat``):
 
 .. code-block:: console
    
-   $ gecos -a abcdefghijklmnop -m PB.mat --contrast 300 --lmin 65 --lmax 70 -f pb_scheme.json
+   $ gecos -a abcdefghijklmnop -m PB.mat --contrast 200 --lmin 65 --lmax 70 -f pb_scheme.json
 
 .. image:: /plots/pb_scheme_alignment.png
