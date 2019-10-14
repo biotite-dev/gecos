@@ -250,7 +250,7 @@ The white area shows the allowed color space at the given lightness:
 .. image:: /plots/show_scheme.png
 
 Some symbols might seem to be outside of the allowed space, but remember
-that the white area is only the allowed space at the given lightness.
+that the white area is only the allowed space at the displayed lightness.
 
 The ``--show-example`` options shows an example multiple protein
 sequence alignment with the color scheme.
@@ -295,6 +295,6 @@ PB alphabet and the PB substitution matrix (stored in the file ``PB.mat``):
 
 .. code-block:: console
    
-   $ gecos -a abcdefghijklmnop -m PB.mat --contrast 200 --lmin 65 --lmax 70 -f pb_scheme.json
+   $ gecos -a abcdefghijklmnop -m PB.mat --contrast 300 --lmin 65 --lmax 70 -f pb_scheme.json
 
 .. image:: /plots/pb_scheme_alignment.png
