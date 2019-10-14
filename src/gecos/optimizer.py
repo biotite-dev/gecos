@@ -358,7 +358,7 @@ class DefaultScoreFunction(ScoreFunction):
         calculation.
     """
 
-    def __init__(self, matrix, contrast=1000, distance_formula="CIEDE2000"):
+    def __init__(self, matrix, contrast=700, distance_formula="CIEDE2000"):
         if not matrix.is_symmetric():
             raise ValueError("Substitution matrix must be symmetric")
         super().__init__(len(matrix.get_alphabet1()))
