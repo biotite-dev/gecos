@@ -2,41 +2,35 @@ notifications:
   on_success: never
   on_failure: never
 
-language: generic
+language: python
 matrix:
   include:
   - os: linux
     dist: trusty
     sudo: false
-    env:
-      - PY_VERSION='3.6'
-      - COMPLETE=true
+    python: "3.6"
+      - COMPLETE=false
   - os: linux
     dist: trusty
     sudo: false
-    env:
-      - PY_VERSION='3.7'
+    python: "3.7"
       - COMPLETE=false
+  - os: linux
+    dist: trusty
+    sudo: false
+    python: "3.8"
+      - COMPLETE=true
 
 install:
-  - MINICONDA=Miniconda3-latest-Linux-x86_64.sh
-  - wget https://repo.continuum.io/miniconda/$MINICONDA
-  
-  - bash $MINICONDA -b -p $HOME/miniconda
-  - export PATH="$HOME/miniconda/bin:$PATH"
-  - conda config --set always_yes yes --set changeps1 no
-  - conda update -q conda
-
-  - conda create -q -n gecos-env python=$PY_VERSION
-  - conda install -n gecos-env  -c conda-forge -c anaconda  biotite numpy matplotlib scikit-image pytest sphinx numpydoc
-  - source activate gecos-env
+  - curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python
+  - poetry install
 
 script:
-  - python setup.py test
+  - pytest
 
 before_deploy:
-  - if [ $COMPLETE == true ]; then python setup.py bdist_wheel; fi
-  - if [ $COMPLETE == true ]; then python setup.py build_sphinx; fi
+  - if [ $COMPLETE == true ]; then poetry build; fi
+  - if [ $COMPLETE == true ]; then sphinx-build ./doc ./doc/_build; fi
   - if [ $COMPLETE == true ]; then cd doc/_build; fi
   - if [ $COMPLETE == true ]; then mv html doc; fi
   - if [ $COMPLETE == true ]; then zip -r doc.zip doc; fi
