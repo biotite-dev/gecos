@@ -264,8 +264,7 @@ def plot_pb_scheme_alignment():
     ax = fig.gca()
 
     pb_alphabet = seq.LetterAlphabet("abcdefghijklmnop")
-    fasta_file = fasta.FastaFile()
-    fasta_file.read(PB_EXAMPLE_FILE_NAME)
+    fasta_file = fasta.FastaFile.read(PB_EXAMPLE_FILE_NAME)
     seq_strings = list(fasta_file.values())
     sequences = [seq.GeneralSequence(pb_alphabet, seq_str.replace("-",""))
                  for seq_str in seq_strings]
