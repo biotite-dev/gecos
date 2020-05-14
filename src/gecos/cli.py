@@ -510,8 +510,7 @@ def show_scheme(ax, space, result, lightness):
     ax.set_title(f"L* = {lightness}")
 
 def show_example(ax, colors):
-    fasta_file = fasta.FastaFile()
-    fasta_file.read(EXAMPLE_FILE_NAME)
+    fasta_file = fasta.FastaFile.read(EXAMPLE_FILE_NAME)
     alignment = fasta.get_alignment(fasta_file)
     alignment = alignment[:60]
 

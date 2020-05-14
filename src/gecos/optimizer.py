@@ -190,7 +190,7 @@ class ColorOptimizer(object):
             The inverse start temperature, where the start temperature
             would be :math:`T_{start} = 1/(k_b \cdot \beta_{start})` with
             :math:`k_b` being the boltzmann constant.            
-        rate: float
+        rate_beta: float
             The rate controlls how fast the inverse temperature is
             increased within the annealing schedule.
             Here the exponential schedule is chosen so we have
@@ -206,19 +206,18 @@ class ColorOptimizer(object):
             The radius in which the coordinates are randomly altered at
             the end of the simulated annealing algorithm run.          
         """
-
-        rate_stepsize = None
-        beta = lambda i: beta_start*np.exp(rate_beta*i)
+        # Calculate the max value 'i' can reach so that
+        # 'np.exp(rate_beta*i)' does not overflow
+        max_i = np.log(np.finfo(np.float64).max) / rate_beta
+        beta = lambda i: beta_start*np.exp(rate_beta*i) \
+                         if i < max_i else np.inf
 
         #  Choose rate so that stepsize_end reached after n_steps
         #  derived from step_size(N_steps) = steps_end
         if stepsize_start == stepsize_end:
             rate_stepsize = 0
-        else:
-            if stepsize_end is None:
-                rate_stepsize = -1
-            else:            
-                rate_stepsize = np.log(stepsize_end / stepsize_start) / n_steps
+        else:        
+            rate_stepsize = np.log(stepsize_end / stepsize_start) / n_steps
         step_size = lambda i: stepsize_start * np.exp(rate_stepsize * i)
 
         for i in range(n_steps):
