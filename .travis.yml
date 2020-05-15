@@ -40,3 +40,4 @@ deploy:
   on:
     repo: biotite-dev/gecos
     tags: true
+  skip_cleanup: true
