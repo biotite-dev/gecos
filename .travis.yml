@@ -8,14 +8,11 @@ dist: bionic
 jobs:
   include:
   - python: "3.6"
-    env:
-      - COMPLETE=false
+    env: COMPLETE=false
   - python: "3.7"
-    env:
-      - COMPLETE=false
+    env: COMPLETE=false
   - python: "3.8"
-    env:
-      - COMPLETE=true
+    env: COMPLETE=true
 
 install:
   - curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-poetry.py | python
@@ -27,9 +24,8 @@ script:
 
 before_deploy:
   - if [ $COMPLETE == true ]; then poetry build; fi
-  - if [ $COMPLETE == true ]; then sphinx-build ./doc ./doc/_build; fi
+  - if [ $COMPLETE == true ]; then sphinx-build ./doc ./doc/_build/doc; fi
   - if [ $COMPLETE == true ]; then cd doc/_build; fi
-  - if [ $COMPLETE == true ]; then mv html doc; fi
   - if [ $COMPLETE == true ]; then zip -r doc.zip doc; fi
   - if [ $COMPLETE == true ]; then cd ../..; fi
 
