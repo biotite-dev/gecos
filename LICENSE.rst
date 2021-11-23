@@ -1,7 +1,7 @@
 BSD 3-Clause License
 --------------------
 
-Copyright 2019, Patrick Kunzmann, Benjamin Mayer
+Copyright 2019 - 2021, Patrick Kunzmann, Benjamin Mayer
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without modification,
