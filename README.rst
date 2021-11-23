@@ -46,3 +46,15 @@ If these prerequisites are met, *Gecos* is simply installed via
 .. code-block:: console
 
    $ pip install gecos
+
+Citation
+--------
+
+If you use *Gecos* in a scientific publication, please cite:
+
+|
+
+   P. Kunzmann, B. E. Mayer, K. Hamacher,
+   "Substitution matrix based color schemes for sequence alignment visualization,"
+   BMC Bioinformatics, vol. 21, pp. 209, 2020.
+   doi: `10.1186/s12859-020-3526-6 <https://doi.org/10.1186/s12859-020-3526-6>`_

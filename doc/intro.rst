@@ -298,3 +298,15 @@ PB alphabet and the PB substitution matrix (stored in the file ``PB.mat``):
    $ gecos -a abcdefghijklmnop -m PB.mat --contrast 300 --lmin 65 --lmax 70 -f pb_scheme.json
 
 .. image:: /plots/pb_scheme_alignment.png
+
+Citation
+--------
+
+If you use *Gecos* in a scientific publication, please cite:
+
+|
+
+   P. Kunzmann, B. E. Mayer, K. Hamacher,
+   "Substitution matrix based color schemes for sequence alignment visualization,"
+   BMC Bioinformatics, vol. 21, pp. 209, 2020.
+   doi: `10.1186/s12859-020-3526-6 <https://doi.org/10.1186/s12859-020-3526-6>`_
