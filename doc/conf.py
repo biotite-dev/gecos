@@ -86,6 +86,7 @@ html_theme_options = {
     "github_user"   : "biotite-dev",
     "github_repo"   : "gecos",
     "github_banner" : "true",
+    "github_type"   : "star",
     "page_width"    : "85%",
     "fixed_sidebar" : "true"
 }
