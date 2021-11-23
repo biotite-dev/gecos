@@ -47,6 +47,12 @@ If these prerequisites are met, *Gecos* is simply installed via
 
    $ pip install gecos
 
+Alternatively, *Gecos* can be installed via *Conda*:
+
+.. code-block:: console
+
+   $ conda install -c conda-forge gecos
+
 Citation
 --------
 
