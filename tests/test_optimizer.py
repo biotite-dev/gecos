@@ -9,10 +9,8 @@ from biotite.sequence.align import SubstitutionMatrix
 import gecos
 
 
-MIN_L = 0
-MAX_L = 99
-MIN_AB = -128
-MAX_AB = 127
+MIN_COORD = np.array([ 0, -128, -128], dtype=float)
+MAX_COORD = np.array([99,  127,  127], dtype=float)
 
 
 def test_scale_factor():
@@ -127,31 +125,27 @@ def test_optimized_distances():
     assert b_to_c_test == pytest.approx(b_to_c_ref, rel=0.1)
 
 
-def _is_allowed(coord, space):
-    if coord[0] < MIN_L  or coord[0] > MAX_L  or \
-        coord[1] < MIN_AB or coord[1] > MAX_AB or \
-        coord[2] < MIN_AB or coord[2] > MAX_AB:
-            return False
-    # Add sign to ensure the corresponding integer value
-    # has an absolute value at least as high as the floating value
-    # This ensures that no unallowed values
-    # are classified as allowed
-    return space[
-        int(coord[0]) - MIN_L,
-        int(coord[1]) - MIN_AB,
-        int(coord[2]) - MIN_AB,
-    ]
-
-
 def _draw_random(n_symbols, space):
-    random_coord = np.full((n_symbols, 3), -1, dtype=float)
-    for i in range(random_coord.shape[0]):
-        while not _is_allowed(random_coord[i], space._space):
-            drawn_coord = np.random.rand(3)
-            drawn_coord[..., 0]  *= (MAX_L -MIN_L ) + MIN_L
-            drawn_coord[..., 1:] *= (MAX_AB-MIN_AB) + MIN_AB
-            random_coord[i] = drawn_coord
+    space = space.space
+    random_coord = np.zeros((n_symbols, 3))
+    # Resample coordinates that are not in valid space until they
+    # are in valid space
+    resample_mask = np.ones(n_symbols, dtype=bool)
+    while resample_mask.any():
+        random_coord[resample_mask] = (
+            np.random.rand(np.count_nonzero(resample_mask), 3)
+            * (MAX_COORD - MIN_COORD) + MIN_COORD
+        )
+        resample_mask[_is_allowed(random_coord, space)] = False
     return random_coord
+
+
+def _is_allowed(coord, space):
+    mask = ((coord >= MIN_COORD) & (coord <= MAX_COORD)).all(axis=-1)
+    # Only check values that are within valid index range
+    ind = (coord[mask] - MIN_COORD).astype(int)
+    mask[mask.copy()] = space[ind[..., 0], ind[..., 1], ind[..., 2]]
+    return mask
 
 
 def _distance(coord_a, coord_b):
