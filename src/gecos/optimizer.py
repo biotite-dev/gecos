@@ -252,11 +252,11 @@ class ColorOptimizer(object):
             The result.
         """
         trajectory = np.array(self._trajectory)
-        self._scores = np.array(self._scores)
+        scores = np.array(self._scores)
         return ColorOptimizer.Result(
             alphabet = self._alphabet,
             trajectory = trajectory,
-            scores = self._scores
+            scores = scores
         )
     
     def _is_allowed(self, coord):
