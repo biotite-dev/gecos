@@ -240,7 +240,7 @@ class ColorOptimizer(object):
                 if p <= p_accept:
                     self._set_coordinates(new_coord, new_score)
                 else:
-                    self._set_coordinates(self._coord, new_score)
+                    self._set_coordinates(self._coord, score)
                     
     def get_result(self):
         """
