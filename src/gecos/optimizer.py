@@ -361,73 +361,62 @@ class DefaultScoreFunction(ScoreFunction):
         perceptual difference, ``'CIE76'`` features the fastest
         calculation.
     """
-
     def __init__(self, matrix, contrast=700, distance_formula="CIEDE2000"):
         if not matrix.is_symmetric():
             raise ValueError("Substitution matrix must be symmetric")
-        super().__init__(len(matrix.get_alphabet1()))
-        self._matrix = self._calculate_distance_matrix(matrix)
-        self._n = DefaultScoreFunction._n_pairs(len(matrix.score_matrix()))
+        n_symbols = len(matrix.get_alphabet1())
+        super().__init__(n_symbols)
+        self._tri_indices = np.tril_indices(n_symbols, k=-1)
+        self._ideal_dist = DefaultScoreFunction._calculate_ideal_distances(
+            self._tri_indices, matrix
+        )
         self._contrast = contrast
         if distance_formula not in ["CIE76", "CIEDE94", "CIEDE2000"]:
             raise ValueError(
-                f"Unknown color distance measure f'{distance_measure}'"
+                f"Unknown color distance formula '{distance_formula}'"
             )
         self._distance_formula = distance_formula
     
     def __call__(self, coord):
         super().__call__(coord)
-        dist = DefaultScoreFunction._calculate_distance(
-            coord, self._distance_formula
+        
+        dist = DefaultScoreFunction._calculate_distances(
+            self._tri_indices, coord, self._distance_formula
         )
-        dist_sum = np.sum(dist)
         # This factor translates visual distances
-        # into substitution matrix distances
-        scale_factor = self._n / dist_sum
+        # into normalized substitution matrix distances
+        mean_dist = np.average(dist)
         # Harmonic potentials between each pair of symbols
-        harmonic_score = np.sum((dist*scale_factor - self._matrix)**2)
+        harmonic_loss = np.sum((dist / mean_dist - self._ideal_dist)**2)
         # Contrast term: Favours conformations
         # with large absolute color differences
-        mean_dist = dist_sum / DefaultScoreFunction._n_pairs(len(dist))
-        contrast_score = self._contrast / mean_dist
-        return harmonic_score + contrast_score
+        contrast_loss = self._contrast / mean_dist
+        return harmonic_loss + contrast_loss
     
     @staticmethod
-    def _calculate_distance(coord, distance_formula):
-        ind1, ind2 = np.tril_indices(len(coord), k=-1)
-        flat_coord1 = coord[ind1]
-        flat_coord2 = coord[ind2]
+    def _calculate_distances(tri_indices, coord, distance_formula):
+        ind1, ind2 = tri_indices
         if distance_formula == "CIEDE76":
-            flat_dist = skimage.color.deltaE_ciede94(
-                flat_coord1, flat_coord2
+            dist = skimage.color.deltaE_ciede94(
+                coord[ind1], coord[ind2]
             )
         elif distance_formula == "CIEDE94":
-            flat_dist = skimage.color.deltaE_cie76(
-                flat_coord1, flat_coord2
+            dist = skimage.color.deltaE_cie76(
+                coord[ind1], coord[ind2]
             )
         else: #"CIEDE2000"
-            flat_dist = skimage.color.deltaE_ciede2000(
-                flat_coord1, flat_coord2
+            dist = skimage.color.deltaE_ciede2000(
+                coord[ind1], coord[ind2]
             )
-        dist = np.zeros((len(coord),)*2)
-        dist[ind1, ind2] = flat_dist
         return dist
 
     @staticmethod
-    def _calculate_distance_matrix(similarity_matrix):
-        scores = similarity_matrix.score_matrix()
+    def _calculate_ideal_distances(tri_indices, substitution_matrix):
+        scores = substitution_matrix.score_matrix()
         diff_to_max = np.diag(scores) - scores
-        distances = np.tril((diff_to_max + diff_to_max.T) / 2)
+        dist_matrix = (diff_to_max + diff_to_max.T) / 2
+        ind_i, ind_j = tri_indices
+        distances = dist_matrix[ind_i, ind_j]
         # Scale, so that average distance is 1
-        n = DefaultScoreFunction._n_pairs(len(scores))
-        distances /= (np.sum(distances) / n)
+        distances /= np.average(distances)
         return distances
-    
-    @staticmethod
-    def _n_pairs(n_symbols):
-        """
-        Calculate the number of values in the lower triangle,
-        excluding the main diagonal, of a
-        matrix with a shape *(n_symbols, n_symbols)*.
-        """
-        return (n_symbols - 1) / 2 * n_symbols
