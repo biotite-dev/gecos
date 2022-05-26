@@ -1,6 +1,4 @@
-import os
 from multiprocessing import Pool
-import itertools
 from os.path import join, dirname, realpath, isfile
 import argparse
 import copy
@@ -318,10 +316,7 @@ def main(args=None, result_container=None, show_plots=True):
         for symbol, l, a, b in args.constraint:
             constraints[alphabet.encode(symbol)] = (l,a,b)
     
-    score_func = DefaultScoreFunction(matrix, args.contrast, args.delta)
-    optimizer = ColorOptimizer(
-        matrix.get_alphabet1(), score_func, space, constraints
-    )    
+    score_func = DefaultScoreFunction(matrix, args.contrast, args.delta)   
     
     # Simulated annealing
     n_parallel = args.nruns      
@@ -523,8 +518,3 @@ def show_score(ax, scores):
     ax.plot(scores)
     ax.set_xlabel("Step")
     ax.set_ylabel("Score")
-
-
-def optimize(optimizer, n_steps, temp, step_size):
-    optimizer.optimize(n_steps, temp, step_size)
-    return optimizer
