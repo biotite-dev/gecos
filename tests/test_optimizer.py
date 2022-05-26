@@ -124,6 +124,37 @@ def test_optimized_distances():
     assert b_to_c_test == pytest.approx(b_to_c_ref, rel=0.1)
 
 
+@pytest.mark.parametrize("constraint_seed", np.arange(10))
+def test_constraints(constraint_seed):
+    N_STEPS = 100
+    alph = Alphabet([s for s in ProteinSequence.alphabet.get_symbols()[:20]])
+    matrix = SubstitutionMatrix(alph, alph, "BLOSUM62")
+
+    constraint_mask = np.random.choice([False, True], len(alph))
+    # Arbitrarily set constraint colors to gray (50, 0, 0)
+    constraint_pos = np.repeat(
+        np.array([[50, 0, 0]], dtype=float),
+        len(alph),
+        axis=0
+    )
+    constraint_pos[~constraint_mask] = np.nan
+
+    np.random.seed(0)
+    space = gecos.ColorSpace()
+    score_func = gecos.DefaultScoreFunction(matrix)
+    optimizer = gecos.ColorOptimizer(alph, score_func, space, constraint_pos)
+    optimizer.optimize(N_STEPS, 1e-7, 1, 20, 0.01)
+    result = optimizer.get_result()
+    opt_coord = result.lab_colors
+
+    # No constrained colors should have changed,
+    # but all non-constrained colors during the optimization
+    assert opt_coord[constraint_mask].tolist() \
+        == constraint_pos[constraint_mask].tolist()
+    assert opt_coord[~constraint_mask].tolist() \
+        != constraint_pos[~constraint_mask].tolist()
+
+
 def _draw_random(n_symbols, space):
     space = space.space
     random_coord = np.zeros((n_symbols, 3))
