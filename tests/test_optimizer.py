@@ -76,16 +76,16 @@ def test_optimized_distances():
     distance is larger than the combined other two distances.
     """
     N_STEPS = 20000
-    np.random.seed(0)
 
-    # Create alphabet with two symbols
-    # and a identity substution matrix for it
+    # Create alphabet with three symbols
+    # and a toy substitution matrix for it
     alph = Alphabet(["A", "B", "C"])
     score_matrix = [
         [10,  5,  3],
         [ 5, 10,  2],
         [ 3,  2, 10]
     ]
+
     matrix = SubstitutionMatrix(alph, alph, np.array(score_matrix))
     # Contrast factor is 0 to optimize only for pairwise distances
     score_func = gecos.DefaultScoreFunction(
@@ -96,15 +96,14 @@ def test_optimized_distances():
     a_to_c_ref = distance_matrix[2,0]
     b_to_c_ref = distance_matrix[2,1]
 
+    np.random.seed(0)
     space = gecos.ColorSpace()
-    start_coord = _draw_random(len(alph), gecos.ColorSpace())
-    start_score = score_func(start_coord)
     optimizer = gecos.ColorOptimizer(alph, score_func, space)
-    optimizer.set_coordinates(start_coord)
     optimizer.optimize(N_STEPS, 1e-7, 1, 20, 0.01)
     result = optimizer.get_result()
     optimized_coord = result.lab_colors
     optimized_score = result.score
+    start_score = result.scores[0]
 
     # Expect 0, since all three symbols can be arranged optimally,
     # i.e. all distances can be the equilibrium distance
