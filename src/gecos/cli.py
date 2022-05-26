@@ -37,7 +37,7 @@ class InputError(Exception):
     pass
 
 
-def f_run_optimization_sa(optline):
+def _optimize(optline):
     """
     Worker function used for parallel execution of simulated annealing
     optimizer with optline being a tuple containing the needed data
@@ -340,7 +340,7 @@ def main(args=None, result_container=None, show_plots=True):
     ]
 
     with Pool(n_parallel) as p:
-        results = p.map(f_run_optimization_sa, opt_data)
+        results = p.map(_optimize, opt_data)
     best_result = sorted(results, key=lambda x: x.score)[0]
 
     scores = np.array([result.scores for result in results])
