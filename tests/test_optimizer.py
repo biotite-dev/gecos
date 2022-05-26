@@ -91,10 +91,8 @@ def test_optimized_distances():
     score_func = gecos.DefaultScoreFunction(
         matrix, contrast=0, distance_formula="CIE76"
     )
-    distance_matrix = score_func._matrix
-    a_to_b_ref = distance_matrix[1,0]
-    a_to_c_ref = distance_matrix[2,0]
-    b_to_c_ref = distance_matrix[2,1]
+    ideal_distances = score_func._ideal_dist
+    a_to_b_ref, a_to_c_ref, b_to_c_ref = ideal_distances
 
     np.random.seed(0)
     space = gecos.ColorSpace()
