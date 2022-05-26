@@ -143,7 +143,7 @@ def _draw_random(n_symbols, space):
 def _is_allowed(coord, space):
     mask = ((coord >= MIN_COORD) & (coord <= MAX_COORD)).all(axis=-1)
     # Only check values that are within valid index range
-    ind = (coord[mask] - MIN_COORD).astype(int)
+    ind = np.floor(coord[mask] - MIN_COORD).astype(int)
     mask[mask.copy()] = space[ind[..., 0], ind[..., 1], ind[..., 2]]
     return mask
 

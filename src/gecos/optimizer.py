@@ -92,7 +92,7 @@ class ColorOptimizer(object):
         
         @property
         def rgb_colors(self):
-            return lab_to_rgb(self.lab_colors.astype(int))
+            return lab_to_rgb(np.floor(self.lab_colors))
     
     def __init__(self, alphabet, score_function, space, constraints=None):
         self._alphabet = alphabet
@@ -266,7 +266,8 @@ class ColorOptimizer(object):
         """
         mask = ((coord >= MIN_COORD) & (coord <= MAX_COORD)).all(axis=-1)
         # Only check values that are within valid index range
-        ind = (coord[mask] - MIN_COORD).astype(int)
+        # Use floor for correct conversion of negative values to index
+        ind = np.floor(coord[mask] - MIN_COORD).astype(int)
         mask[mask.copy()] = self._space[ind[..., 0], ind[..., 1], ind[..., 2]]
         return mask
     
