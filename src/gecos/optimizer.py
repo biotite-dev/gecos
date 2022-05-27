@@ -11,15 +11,11 @@ import copy
 import skimage
 import numpy as np
 import numpy.random as random
-import biotite.sequence as seq
-import biotite.sequence.align as align
 from .colors import lab_to_rgb
 
 
-MIN_L = 0
-MAX_L = 99
-MIN_AB = -128
-MAX_AB = 127
+MIN_COORD = np.array([ 0, -128, -128], dtype=float)
+MAX_COORD = np.array([99,  127,  127], dtype=float)
 
 
 class ColorOptimizer(object):
@@ -96,42 +92,44 @@ class ColorOptimizer(object):
         
         @property
         def rgb_colors(self):
-            return lab_to_rgb(self.lab_colors.astype(int))
+            return lab_to_rgb(np.floor(self.lab_colors))
     
     def __init__(self, alphabet, score_function, space, constraints=None):
         self._alphabet = alphabet
         self._n_symbols = len(alphabet)
         self._score_func = score_function
         self._space = space.space.copy()
-        self._coord = None
         self._trajectory = []
         self._scores = []
 
         if constraints is None:
+            self._constraint_mask = np.zeros(self._n_symbols, dtype=bool)
             self._constraints = np.full((self._n_symbols, 3), np.nan)
         else:
-            for constraint in constraints:
-                if not np.isnan(constraint).any() and \
-                   not self._is_allowed(constraint):
-                    raise ValueError(
-                        f"Constraint {constraint} is outside the allowed space"
-                    )
+            self._constraint_mask = ~np.isnan(constraints).any(axis=-1)
+            # Check constraints
+            constraint_vals = constraints[self._constraint_mask]
+            invalid_ind = np.where(~self._is_allowed(constraint_vals))[0]
+            if len(invalid_ind) > 0:
+                raise ValueError(
+                    f"Constraint {constraint_vals[invalid_ind[0]]} "
+                    f"is outside the allowed space"
+                )
             self._constraints = constraints.copy()
 
-        ### Set initial conformation ###
-        # Every symbol has the 'l', 'a' and 'b' coordinates
-        # The coordinates are initially filled with values
-        # that are guaranteed to be invalid (l cannot be -1)
-        start_coord = np.full((self._n_symbols, 3), -1, dtype=float)
-        # Chose start position from allowed positions at random
-        for i in range(start_coord.shape[0]):
-            while not self._is_allowed(start_coord[i]):
-                drawn_coord = random.rand(3)
-                drawn_coord[..., 0]  *= (MAX_L -MIN_L ) + MIN_L
-                drawn_coord[..., 1:] *= (MAX_AB-MIN_AB) + MIN_AB
-                start_coord[i] = drawn_coord
-        self._apply_constraints(start_coord)
-        self._set_coordinates(start_coord)
+        # Sample random initial coordinates
+        coord = np.zeros((self._n_symbols, 3))
+        self._apply_constraints(coord)
+        self._set_coordinates(
+            self._sample_coord(
+                coord,
+                lambda c: (
+                    random.rand(*c.shape)
+                    # Bring random values into correct range
+                    * (MAX_COORD - MIN_COORD) + MIN_COORD
+                )
+            )
+        )
 
     def set_coordinates(self, coord):
         """
@@ -149,11 +147,14 @@ class ColorOptimizer(object):
                 f"Given shape is {coord.shape}, "
                 f"but expected shape is {(len(self._alphabet), 3)}"
             )
-        for c in coord:
-            if not self._is_allowed(c):
-                raise ValueError(
-                    f"Coordinates {c} are outside the allowed space"
-                )
+
+        invalid_ind = np.where(~self._is_allowed(coord))[0]
+        if len(invalid_ind) > 0:
+            raise ValueError(
+                f"Coordinate {coord[invalid_ind[0]]} "
+                f"is outside the allowed space"
+            )
+
         coord = coord.copy()
         self._apply_constraints(coord)
         self._set_coordinates(coord)
@@ -191,7 +192,7 @@ class ColorOptimizer(object):
             would be :math:`T_{start} = 1/(k_b \cdot \beta_{start})` with
             :math:`k_b` being the boltzmann constant.            
         rate_beta: float
-            The rate controlls how fast the inverse temperature is
+            The rate controls how fast the inverse temperature is
             increased within the annealing schedule.
             Here the exponential schedule is chosen so we have
             :math:`\beta (t) = \beta_0 \cdot \exp(rate \cdot t)`.
@@ -223,7 +224,10 @@ class ColorOptimizer(object):
         for i in range(n_steps):
         
             score = self._scores[-1]
-            new_coord = self._move(self._coord, step_size(i))
+            new_coord = self._sample_coord(
+                self._coord,
+                lambda c: c + (random.rand(*c.shape)-0.5) * 2 * step_size(i)
+            )
             new_score = self._score_func(new_coord)
             
             if new_score < score:
@@ -236,7 +240,7 @@ class ColorOptimizer(object):
                 if p <= p_accept:
                     self._set_coordinates(new_coord, new_score)
                 else:
-                    self._set_coordinates(self._coord, new_score)
+                    self._set_coordinates(self._coord, score)
                     
     def get_result(self):
         """
@@ -248,43 +252,44 @@ class ColorOptimizer(object):
             The result.
         """
         trajectory = np.array(self._trajectory)
-        self._scores = np.array(self._scores)
+        scores = np.array(self._scores)
         return ColorOptimizer.Result(
             alphabet = self._alphabet,
             trajectory = trajectory,
-            scores = self._scores
+            scores = scores
         )
     
     def _is_allowed(self, coord):
-        if coord[0] < MIN_L  or coord[0] > MAX_L  or \
-           coord[1] < MIN_AB or coord[1] > MAX_AB or \
-           coord[2] < MIN_AB or coord[2] > MAX_AB:
-                return False
-        # Add sign to ensure the corresponding integer value
-        # has an absolute value at least as high as the floating value
-        # This ensures that no unallowed values
-        # are classified as allowed
-        return self._space[
-            int(coord[0]) - MIN_L,
-            int(coord[1]) - MIN_AB,
-            int(coord[2]) - MIN_AB,
-        ]
+        """
+        Get a mask indicating allowed color values, i.e. values within
+        the color space.
+        """
+        mask = ((coord >= MIN_COORD) & (coord <= MAX_COORD)).all(axis=-1)
+        # Only check values that are within valid index range
+        # Use floor for correct conversion of negative values to index
+        ind = np.floor(coord[mask] - MIN_COORD).astype(int)
+        mask[mask.copy()] = self._space[ind[..., 0], ind[..., 1], ind[..., 2]]
+        return mask
     
-    def _move(self, coord, step):
-        new_coord = coord + (random.rand(*coord.shape)-0.5) * 2 * step
-        self._apply_constraints(new_coord)
-        # Resample coordinates for alphabet symbols
-        # when outside of the allowed area
-
-        for i in range(new_coord.shape[0]):
-            while not self._is_allowed(new_coord[i]):
-                new_coord[i] = coord[i] + (random.rand(3)-0.5) * 2 * step
-
+    def _sample_coord(self, old_coord, sampler):
+        """
+        Based on given coordinates sample new coordinates that are
+        within the color space.
+        The sampling function must accept a given array of coordinates
+        and return a new array of the same size.
+        """
+        new_coord = old_coord.copy()
+        # Resample coordinates that are not in valid space until they
+        # are in valid space
+        resample_mask = ~self._constraint_mask.copy()
+        while resample_mask.any():
+            new_coord[resample_mask] = sampler(old_coord[resample_mask])
+            resample_mask[self._is_allowed(new_coord)] = False
         return new_coord
+
     
     def _apply_constraints(self, coord):
-        mask = ~(np.isnan(self._constraints).any(axis=-1))
-        coord[mask] = self._constraints[mask]
+        coord[self._constraint_mask] = self._constraints[self._constraint_mask]
 
 
 class ScoreFunction(metaclass=abc.ABCMeta):
@@ -356,73 +361,62 @@ class DefaultScoreFunction(ScoreFunction):
         perceptual difference, ``'CIE76'`` features the fastest
         calculation.
     """
-
     def __init__(self, matrix, contrast=700, distance_formula="CIEDE2000"):
         if not matrix.is_symmetric():
             raise ValueError("Substitution matrix must be symmetric")
-        super().__init__(len(matrix.get_alphabet1()))
-        self._matrix = self._calculate_distance_matrix(matrix)
-        self._n = DefaultScoreFunction._n_pairs(len(matrix.score_matrix()))
+        n_symbols = len(matrix.get_alphabet1())
+        super().__init__(n_symbols)
+        self._tri_indices = np.tril_indices(n_symbols, k=-1)
+        self._ideal_dist = DefaultScoreFunction._calculate_ideal_distances(
+            self._tri_indices, matrix
+        )
         self._contrast = contrast
         if distance_formula not in ["CIE76", "CIEDE94", "CIEDE2000"]:
             raise ValueError(
-                f"Unknown color distance measure f'{distance_measure}'"
+                f"Unknown color distance formula '{distance_formula}'"
             )
         self._distance_formula = distance_formula
     
     def __call__(self, coord):
         super().__call__(coord)
-        dist = DefaultScoreFunction._calculate_distance(
-            coord, self._distance_formula
+        
+        dist = DefaultScoreFunction._calculate_distances(
+            self._tri_indices, coord, self._distance_formula
         )
-        dist_sum = np.sum(dist)
         # This factor translates visual distances
-        # into substitution matrix distances
-        scale_factor = self._n / dist_sum
+        # into normalized substitution matrix distances
+        mean_dist = np.average(dist)
         # Harmonic potentials between each pair of symbols
-        harmonic_score = np.sum((dist*scale_factor - self._matrix)**2)
+        harmonic_loss = np.sum((dist / mean_dist - self._ideal_dist)**2)
         # Contrast term: Favours conformations
         # with large absolute color differences
-        mean_dist = dist_sum / DefaultScoreFunction._n_pairs(len(dist))
-        contrast_score = self._contrast / mean_dist
-        return harmonic_score + contrast_score
+        contrast_loss = self._contrast / mean_dist
+        return harmonic_loss + contrast_loss
     
     @staticmethod
-    def _calculate_distance(coord, distance_formula):
-        ind1, ind2 = np.tril_indices(len(coord), k=-1)
-        flat_coord1 = coord[ind1]
-        flat_coord2 = coord[ind2]
+    def _calculate_distances(tri_indices, coord, distance_formula):
+        ind1, ind2 = tri_indices
         if distance_formula == "CIEDE76":
-            flat_dist = skimage.color.deltaE_ciede94(
-                flat_coord1, flat_coord2
+            dist = skimage.color.deltaE_ciede94(
+                coord[ind1], coord[ind2]
             )
         elif distance_formula == "CIEDE94":
-            flat_dist = skimage.color.deltaE_cie76(
-                flat_coord1, flat_coord2
+            dist = skimage.color.deltaE_cie76(
+                coord[ind1], coord[ind2]
             )
         else: #"CIEDE2000"
-            flat_dist = skimage.color.deltaE_ciede2000(
-                flat_coord1, flat_coord2
+            dist = skimage.color.deltaE_ciede2000(
+                coord[ind1], coord[ind2]
             )
-        dist = np.zeros((len(coord),)*2)
-        dist[ind1, ind2] = flat_dist
         return dist
 
     @staticmethod
-    def _calculate_distance_matrix(similarity_matrix):
-        scores = similarity_matrix.score_matrix()
+    def _calculate_ideal_distances(tri_indices, substitution_matrix):
+        scores = substitution_matrix.score_matrix()
         diff_to_max = np.diag(scores) - scores
-        distances = np.tril((diff_to_max + diff_to_max.T) / 2)
+        dist_matrix = (diff_to_max + diff_to_max.T) / 2
+        ind_i, ind_j = tri_indices
+        distances = dist_matrix[ind_i, ind_j]
         # Scale, so that average distance is 1
-        n = DefaultScoreFunction._n_pairs(len(scores))
-        distances /= (np.sum(distances) / n)
+        distances /= np.average(distances)
         return distances
-    
-    @staticmethod
-    def _n_pairs(n_symbols):
-        """
-        Calculate the number of values in the lower triangle,
-        excluding the main diagonal, of a
-        matrix with a shape *(n_symbols, n_symbols)*.
-        """
-        return (n_symbols - 1) / 2 * n_symbols

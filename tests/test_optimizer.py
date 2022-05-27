@@ -9,10 +9,8 @@ from biotite.sequence.align import SubstitutionMatrix
 import gecos
 
 
-MIN_L = 0
-MAX_L = 99
-MIN_AB = -128
-MAX_AB = 127
+MIN_COORD = np.array([ 0, -128, -128], dtype=float)
+MAX_COORD = np.array([99,  127,  127], dtype=float)
 
 
 def test_scale_factor():
@@ -78,35 +76,32 @@ def test_optimized_distances():
     distance is larger than the combined other two distances.
     """
     N_STEPS = 20000
-    np.random.seed(0)
 
-    # Create alphabet with two symbols
-    # and a identity substution matrix for it
+    # Create alphabet with three symbols
+    # and a toy substitution matrix for it
     alph = Alphabet(["A", "B", "C"])
     score_matrix = [
         [10,  5,  3],
         [ 5, 10,  2],
         [ 3,  2, 10]
     ]
+
     matrix = SubstitutionMatrix(alph, alph, np.array(score_matrix))
     # Contrast factor is 0 to optimize only for pairwise distances
     score_func = gecos.DefaultScoreFunction(
         matrix, contrast=0, distance_formula="CIE76"
     )
-    distance_matrix = score_func._matrix
-    a_to_b_ref = distance_matrix[1,0]
-    a_to_c_ref = distance_matrix[2,0]
-    b_to_c_ref = distance_matrix[2,1]
+    ideal_distances = score_func._ideal_dist
+    a_to_b_ref, a_to_c_ref, b_to_c_ref = ideal_distances
 
+    np.random.seed(0)
     space = gecos.ColorSpace()
-    start_coord = _draw_random(len(alph), gecos.ColorSpace())
-    start_score = score_func(start_coord)
     optimizer = gecos.ColorOptimizer(alph, score_func, space)
-    optimizer.set_coordinates(start_coord)
     optimizer.optimize(N_STEPS, 1e-7, 1, 20, 0.01)
     result = optimizer.get_result()
     optimized_coord = result.lab_colors
     optimized_score = result.score
+    start_score = result.scores[0]
 
     # Expect 0, since all three symbols can be arranged optimally,
     # i.e. all distances can be the equilibrium distance
@@ -127,31 +122,58 @@ def test_optimized_distances():
     assert b_to_c_test == pytest.approx(b_to_c_ref, rel=0.1)
 
 
-def _is_allowed(coord, space):
-    if coord[0] < MIN_L  or coord[0] > MAX_L  or \
-        coord[1] < MIN_AB or coord[1] > MAX_AB or \
-        coord[2] < MIN_AB or coord[2] > MAX_AB:
-            return False
-    # Add sign to ensure the corresponding integer value
-    # has an absolute value at least as high as the floating value
-    # This ensures that no unallowed values
-    # are classified as allowed
-    return space[
-        int(coord[0]) - MIN_L,
-        int(coord[1]) - MIN_AB,
-        int(coord[2]) - MIN_AB,
-    ]
+@pytest.mark.parametrize("constraint_seed", np.arange(10))
+def test_constraints(constraint_seed):
+    N_STEPS = 100
+    alph = Alphabet([s for s in ProteinSequence.alphabet.get_symbols()[:20]])
+    matrix = SubstitutionMatrix(alph, alph, "BLOSUM62")
+
+    constraint_mask = np.random.choice([False, True], len(alph))
+    # Arbitrarily set constraint colors to gray (50, 0, 0)
+    constraint_pos = np.repeat(
+        np.array([[50, 0, 0]], dtype=float),
+        len(alph),
+        axis=0
+    )
+    constraint_pos[~constraint_mask] = np.nan
+
+    np.random.seed(0)
+    space = gecos.ColorSpace()
+    score_func = gecos.DefaultScoreFunction(matrix)
+    optimizer = gecos.ColorOptimizer(alph, score_func, space, constraint_pos)
+    optimizer.optimize(N_STEPS, 1e-7, 1, 20, 0.01)
+    result = optimizer.get_result()
+    opt_coord = result.lab_colors
+
+    # No constrained colors should have changed,
+    # but all non-constrained colors during the optimization
+    assert opt_coord[constraint_mask].tolist() \
+        == constraint_pos[constraint_mask].tolist()
+    assert opt_coord[~constraint_mask].tolist() \
+        != constraint_pos[~constraint_mask].tolist()
 
 
 def _draw_random(n_symbols, space):
-    random_coord = np.full((n_symbols, 3), -1, dtype=float)
-    for i in range(random_coord.shape[0]):
-        while not _is_allowed(random_coord[i], space._space):
-            drawn_coord = np.random.rand(3)
-            drawn_coord[..., 0]  *= (MAX_L -MIN_L ) + MIN_L
-            drawn_coord[..., 1:] *= (MAX_AB-MIN_AB) + MIN_AB
-            random_coord[i] = drawn_coord
+    space = space.space
+    random_coord = np.zeros((n_symbols, 3))
+    # Resample coordinates that are not in valid space until they
+    # are in valid space
+    resample_mask = np.ones(n_symbols, dtype=bool)
+    while resample_mask.any():
+        random_coord[resample_mask] = (
+            np.random.rand(np.count_nonzero(resample_mask), 3)
+            * (MAX_COORD - MIN_COORD) + MIN_COORD
+        )
+        resample_mask[_is_allowed(random_coord, space)] = False
     return random_coord
+
+
+def _is_allowed(coord, space):
+    mask = ((coord >= MIN_COORD) & (coord <= MAX_COORD)).all(axis=-1)
+    # Only check values that are within valid index range
+    ind = np.floor(coord[mask] - MIN_COORD).astype(int)
+    mask[mask.copy()] = space[ind[..., 0], ind[..., 1], ind[..., 2]]
+    return mask
 
 
 def _distance(coord_a, coord_b):

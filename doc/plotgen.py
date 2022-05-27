@@ -5,8 +5,6 @@
 from os.path import join, isdir, isfile, dirname, realpath
 from os import mkdir
 import matplotlib.pyplot as plt
-import numpy as np
-import numpy.random as random
 from sphinx.util.logging import getLogger
 from sphinx.util import status_iterator
 import biotite as biotite
@@ -88,7 +86,7 @@ def plot_example_space():
 @plot_generator
 def plot_no_constraints_scheme_alignment():
     scheme_file = biotite.temp_file("json")
-    gecli.main(args=["--seed", "1", "-f", scheme_file])
+    gecli.main(args=["--seed", "0", "-f", scheme_file])
     return show_alignment(scheme_file)
 
 @plot_generator
@@ -250,7 +248,7 @@ def plot_pb_scheme_alignment():
             """
         )
     gecli.main(args=[
-        "--seed", "0",
+        "--seed", "3",
         "--alphabet", "abcdefghijklmnop",
         "--matrix", mat_file,
         "--contrast", "300",
