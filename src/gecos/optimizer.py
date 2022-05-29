@@ -166,8 +166,9 @@ class ColorOptimizer(object):
             score = self._score_func(coord)
         self._scores.append(score)
     
-    def optimize(self, n_steps,
-                 beta_start, beta_end, stepsize_start, stepsize_end):
+    def optimize(self, n_steps=10000,
+                 beta_start=1e-7, beta_end=1e20,
+                 stepsize_start=10, stepsize_end=0.1):
         r"""
         Perform a Simulated Annealing optimization on the current
         coordinate to minimize the score returned by the score function.
@@ -214,7 +215,7 @@ class ColorOptimizer(object):
             score = self._scores[-1]
             new_coord = self._sample_coord(
                 self._coord,
-                lambda c: c + (random.rand(*c.shape)-0.5) * 2 * stepsizes(i)
+                lambda c: c + (random.rand(*c.shape)-0.5) * 2 * stepsizes[i]
             )
             new_score = self._score_func(new_coord)
             
@@ -222,7 +223,7 @@ class ColorOptimizer(object):
                 self._set_coordinates(new_coord, new_score)
                 
             else:
-                p_accept = np.exp( -betas(i) * (new_score-score))
+                p_accept = np.exp( -betas[i] * (new_score-score))
                 if random.rand() <= p_accept:
                     self._set_coordinates(new_coord, new_score)
                 else:
