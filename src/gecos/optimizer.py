@@ -167,7 +167,7 @@ class ColorOptimizer(object):
         self._scores.append(score)
     
     def optimize(self, n_steps,
-                 beta_start, rate_beta, stepsize_start, stepsize_end):
+                 beta_start, beta_end, stepsize_start, stepsize_end):
         r"""
         Perform a Simulated Annealing optimization on the current
         coordinate to minimize the score returned by the score function.
@@ -207,26 +207,14 @@ class ColorOptimizer(object):
             The radius in which the coordinates are randomly altered at
             the end of the simulated annealing algorithm run.          
         """
-        # Calculate the max value 'i' can reach so that
-        # 'np.exp(rate_beta*i)' does not overflow
-        max_i = np.log(np.finfo(np.float64).max) / rate_beta
-        beta = lambda i: beta_start*np.exp(rate_beta*i) \
-                         if i < max_i else np.inf
-
-        #  Choose rate so that stepsize_end reached after n_steps
-        #  derived from step_size(N_steps) = steps_end
-        if stepsize_start == stepsize_end:
-            rate_stepsize = 0
-        else:        
-            rate_stepsize = np.log(stepsize_end / stepsize_start) / n_steps
-        step_size = lambda i: stepsize_start * np.exp(rate_stepsize * i)
+        betas = _calculate_schedule(n_steps, beta_start, beta_end)
+        stepsizes = _calculate_schedule(n_steps, stepsize_start, stepsize_end)
 
         for i in range(n_steps):
-        
             score = self._scores[-1]
             new_coord = self._sample_coord(
                 self._coord,
-                lambda c: c + (random.rand(*c.shape)-0.5) * 2 * step_size(i)
+                lambda c: c + (random.rand(*c.shape)-0.5) * 2 * stepsizes(i)
             )
             new_score = self._score_func(new_coord)
             
@@ -234,10 +222,8 @@ class ColorOptimizer(object):
                 self._set_coordinates(new_coord, new_score)
                 
             else:
-                p_accept = np.exp( -beta(i) * (new_score-score))
-                p = random.rand()
-                
-                if p <= p_accept:
+                p_accept = np.exp( -betas(i) * (new_score-score))
+                if random.rand() <= p_accept:
                     self._set_coordinates(new_coord, new_score)
                 else:
                     self._set_coordinates(self._coord, score)
@@ -290,6 +276,15 @@ class ColorOptimizer(object):
     
     def _apply_constraints(self, coord):
         coord[self._constraint_mask] = self._constraints[self._constraint_mask]
+
+
+def _calculate_schedule(n_steps, start, end):
+    """
+    Calculate the values for each step in an exponential schedule.
+    """
+    # Use float 64
+    return start * (end/start)**np.linspace(0, 1, n_steps, dtype=np.float64)
+
 
 
 class ScoreFunction(metaclass=abc.ABCMeta):
