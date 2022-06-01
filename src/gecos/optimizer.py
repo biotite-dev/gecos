@@ -170,43 +170,40 @@ class ColorOptimizer(object):
                  beta_start=1, beta_end=500,
                  stepsize_start=10, stepsize_end=0.2):
         r"""
-        Perform a Simulated Annealing optimization on the current
+        Perform a simulated annealing optimization on the current
         coordinate to minimize the score returned by the score function.
         
-        This is basically a Monte-Carlo optimization where the
-        temperature is varied according to a so called annealing
-        schedule over the course of the optimization. 
+        This is basically a Metropolis-Monte-Carlo optimization where
+        the inverse temperature and step size is varied according to
+        exponential annealing schedule over the course of the
+        optimization.                            
+        
+        Parameters
+        ----------
+        n_steps : int
+            The number of simulated annealing steps.
+        beta_start, beta_end : float
+            The inverse temperature in the first and last step of the
+            optimization, respectively.
+            Higher values allow less increase of score, i.e. result
+            in a steering into the local minimum.
+            Must be positive.
+        stepsize_start, stepsize_end : float
+            The step size in the first and last step of the
+            optimization, respectively.
+            it is the radius in which the coordinates are randomly
+            altered at in each optimization step.
+            Must be positive.
+
+        Notes
+        -----
         The algorithm is a heuristic thats motivated by the physical
         process of annealing.
         If we, e.g., cool steel than a slow cooling can yield a superior
         quality, whereas for a fast cooling the steel can become
         brittle.
         The same happens here within the search space for the given
-        minimization task.                              
-        
-        Parameters
-        ----------
-        n_steps : int
-            The number of Simulated-Annealing steps.
-        beta_start : float
-            The inverse start temperature, where the start temperature
-            would be :math:`T_{start} = 1/(k_b \cdot \beta_{start})` with
-            :math:`k_b` being the boltzmann constant.            
-        rate_beta: float
-            The rate controls how fast the inverse temperature is
-            increased within the annealing schedule.
-            Here the exponential schedule is chosen so we have
-            :math:`\beta (t) = \beta_0 \cdot \exp(rate \cdot t)`.
-        stepsize_start : float
-            The radius in which the coordinates are randomly altered at
-            the beginning of the simulated anneling algorithm.
-            Like the inverse temperature the step size follows an
-            exponential schedule, enabling the algorithm
-            to do large perturbartions at the beginning of the algorithm
-            run and increasingly smaller ones afterwards.
-        stepsize_end : float
-            The radius in which the coordinates are randomly altered at
-            the end of the simulated annealing algorithm run.          
+        minimization task.       
         """
         betas = _calculate_schedule(n_steps, beta_start, beta_end)
         stepsizes = _calculate_schedule(n_steps, stepsize_start, stepsize_end)
