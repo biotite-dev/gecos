@@ -393,8 +393,8 @@ class DefaultScoreFunction(ScoreFunction):
     def _calculate_distances(tri_indices, coord, distance_formula):
         ind1, ind2 = tri_indices
         if distance_formula == "CIEDE76":
-            return skimage.color.deltaE_cie76(
-                coord[ind1], coord[ind2]
+            return np.sqrt(
+                np.sum((coord[ind1, :] - coord[ind2, :])**2, axis=-1)
             )
         elif distance_formula == "CIEDE94":
             return skimage.color.deltaE_ciede94(
