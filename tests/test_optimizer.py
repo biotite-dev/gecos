@@ -137,7 +137,7 @@ def test_constraints(constraint_seed):
     )
     constraint_pos[~constraint_mask] = np.nan
 
-    np.random.seed(0)
+    np.random.seed(constraint_seed)
     space = gecos.ColorSpace()
     score_func = gecos.DefaultScoreFunction(matrix)
     optimizer = gecos.ColorOptimizer(alph, score_func, space, constraint_pos)
