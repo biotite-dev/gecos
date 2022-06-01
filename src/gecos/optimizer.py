@@ -367,7 +367,7 @@ class DefaultScoreFunction(ScoreFunction):
             self._tri_indices, matrix
         )
         self._contrast = contrast
-        if distance_formula not in ["CIE76", "CIEDE94", "CIEDE2000"]:
+        if distance_formula not in ["CIEDE76", "CIEDE94", "CIEDE2000"]:
             raise ValueError(
                 f"Unknown color distance formula '{distance_formula}'"
             )
