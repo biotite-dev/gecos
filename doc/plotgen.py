@@ -65,7 +65,7 @@ def plot_generator(function):
 def plot_main_example_alignment():
     scheme_file = biotite.temp_file("json")
     gecli.main(args=[
-        "--seed", "0",
+        "--seed", "3",
         "--matrix", "BLOSUM62",
         "--lmin", "60",
         "--lmax", "75",
