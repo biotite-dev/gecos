@@ -393,18 +393,17 @@ class DefaultScoreFunction(ScoreFunction):
     def _calculate_distances(tri_indices, coord, distance_formula):
         ind1, ind2 = tri_indices
         if distance_formula == "CIEDE76":
-            dist = skimage.color.deltaE_ciede94(
+            return skimage.color.deltaE_cie76(
                 coord[ind1], coord[ind2]
             )
         elif distance_formula == "CIEDE94":
-            dist = skimage.color.deltaE_cie76(
+            return skimage.color.deltaE_ciede94(
                 coord[ind1], coord[ind2]
             )
         else: #"CIEDE2000"
-            dist = skimage.color.deltaE_ciede2000(
+            return skimage.color.deltaE_ciede2000(
                 coord[ind1], coord[ind2]
             )
-        return dist
 
     @staticmethod
     def _calculate_ideal_distances(tri_indices, substitution_matrix):
