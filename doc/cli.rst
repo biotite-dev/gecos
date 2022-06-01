@@ -71,12 +71,15 @@ In order to increase the quality of the scheme tha amount of optimization steps
 (``--nsteps``) or the number of runs (``--nruns``) can be increased.
 However, increasing these values also extends the runtime of the optimization.
 Note that ``--nruns`` can take advantage of multiple cores.
+The number of used cores is set with ``--nthreads``
 
 The simulated annealing can be adjusted even more fine grained by setting
-the initial reverse temperature (``--beta``) and the rate of its exponential
-growth (``--rate``). The step size decreases in the course of the simulated
+the inverse temperature at the first (``--beta-start``) and last
+(``--beta-end``) step of the optimization.
+For the steps in between the inverse temperature is interpolated exponentially.
+The step size decreases in the course of the simulated
 annealing also in an exponential manner, which can be parameterized via
-``--step-size-start`` and ``--step-size-end``.
+``--stepsize-start`` and ``--stepsize-end``.
 The seed for the random number generator used by the algorithm is set with
 the ``--seed`` option.
 However, these parameters address the more advanced users.
