@@ -198,8 +198,15 @@ def main(args=None, result_container=None, show_plots=True):
     )
     opt_group.add_argument(
         "--nruns", default=16, type=int,
-        help="Number of parallel optimization algorithms runs that are to be "
-             "executed.",
+        help="Number of optimizations to run. "
+             "From these runs, the color scheme with the best score is "
+             "selected.",
+        metavar="NUMBER"
+    )
+    opt_group.add_argument(
+        "--nthreads", type=int,
+        help="Number of optimization runs to run in parallel. "
+             "By default this is equal to the number of CPUs.",
         metavar="NUMBER"
     )
     opt_group.add_argument(
@@ -320,7 +327,7 @@ def main(args=None, result_container=None, show_plots=True):
     # Different random seed for each run
     seeds = np.random.randint(0, 1000000, size=args.nruns)
 
-    with Pool(args.nruns) as p:
+    with Pool(args.nthreads) as p:
         results = p.starmap(_optimize, zip(
             seeds,
             itertools.repeat(matrix.get_alphabet1()),
