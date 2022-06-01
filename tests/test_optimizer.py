@@ -87,7 +87,7 @@ def test_optimized_distances():
     matrix = SubstitutionMatrix(alph, alph, np.array(score_matrix))
     # Contrast factor is 0 to optimize only for pairwise distances
     score_func = gecos.DefaultScoreFunction(
-        matrix, contrast=0, distance_formula="CIEDE76"
+        matrix, contrast=0, distance_formula="CIE76"
     )
     ideal_distances = score_func._ideal_dist
     a_to_b_ref, a_to_c_ref, b_to_c_ref = ideal_distances

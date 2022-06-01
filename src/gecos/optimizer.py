@@ -367,7 +367,7 @@ class DefaultScoreFunction(ScoreFunction):
             self._tri_indices, matrix
         )
         self._contrast = contrast
-        if distance_formula not in ["CIEDE76", "CIEDE94", "CIEDE2000"]:
+        if distance_formula not in ["CIE76", "CIEDE94", "CIEDE2000"]:
             raise ValueError(
                 f"Unknown color distance formula '{distance_formula}'"
             )
@@ -392,7 +392,7 @@ class DefaultScoreFunction(ScoreFunction):
     @staticmethod
     def _calculate_distances(tri_indices, coord, distance_formula):
         ind1, ind2 = tri_indices
-        if distance_formula == "CIEDE76":
+        if distance_formula == "CIE76":
             return np.sqrt(
                 np.sum((coord[ind1, :] - coord[ind2, :])**2, axis=-1)
             )
