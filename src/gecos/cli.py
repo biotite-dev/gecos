@@ -1,5 +1,6 @@
 from multiprocessing import Pool
 from os.path import join, dirname, realpath, isfile
+import itertools
 import argparse
 import copy
 import sys
@@ -37,22 +38,18 @@ class InputError(Exception):
     pass
 
 
-def _optimize(optline):
+def _optimize(seed, alphabet, score_func, space, constraints, 
+              nsteps, beta_start, beta_end, stepsize_start, stepsize_end):
     """
-    Worker function used for parallel execution of simulated annealing
-    optimizer with optline being a tuple containing the needed data
+    Worker function used for parallel execution of simulated annealing.
     """
-    (
-        alphabet, score_func, space, constraints, 
-        nsteps, beta, rate, step_size_start, step_size_end,
-        seed 
-    ) = optline
-    
     np.random.seed(seed)
     optimizer = ColorOptimizer(
         alphabet, score_func, space, constraints
     )
-    optimizer.optimize(nsteps, beta, rate, step_size_start, step_size_end)
+    optimizer.optimize(
+        nsteps, beta_start, beta_end, stepsize_start, stepsize_end
+    )
     return optimizer.get_result()
 
 @handle_error
@@ -206,24 +203,23 @@ def main(args=None, result_container=None, show_plots=True):
         metavar="NUMBER"
     )
     opt_group.add_argument(
-        "--beta", default=1e-7, type=float,
-        help="Inverse start temperature for simulated annealing algorithm.",
+        "--beta-start", default=1, type=float,
+        help="Inverse temperature at start of simulated annealing.",
         metavar="FLOAT",
     )
     opt_group.add_argument(
-        "--rate", default=1, type=float,
-        help="Rate controlling the exponential annealing schedule, "
-             "for the annealing of the inverse temperature.",
+        "--beta-end", default=500, type=float,
+        help="Inverse temperature at end of simulated annealing.",
         metavar="FLOAT",
     )   
     opt_group.add_argument(
-        "--step-size-start", default=20, type=float,
-        help="Start step size for simulated annealing algorithm.",
+        "--stepsize-start", default=10, type=float,
+        help="Step size temperature at start of simulated annealing.",
         metavar="FLOAT",
     )
     opt_group.add_argument(
-        "--step-size-end", default=0.1, type=float,
-        help="End step size for simulated annealing algorithm.",
+        "--stepsize-end", default=0.2, type=float,
+        help="Step size temperature at end of simulated annealing.",
         metavar="FLOAT",
     )     
     
@@ -318,30 +314,26 @@ def main(args=None, result_container=None, show_plots=True):
     
     score_func = DefaultScoreFunction(matrix, args.contrast, args.delta)   
     
-    # Simulated annealing
-    n_parallel = args.nruns      
+    # Simulated annealing     
     if args.seed is not None:
         np.random.seed(int(args.seed))
-    # Different randomly seed for each run
-    seeds = np.random.randint(0, 1000000, size=n_parallel)
-    opt_data = [
-        (
-            matrix.get_alphabet1(),
-            score_func,
-            space,
-            constraints,
-            args.nsteps, 
-            args.beta,
-            args.rate,
-            args.step_size_start,
-            args.step_size_end,
-            seeds[i])
-        for i in range(n_parallel)
-    ]
+    # Different random seed for each run
+    seeds = np.random.randint(0, 1000000, size=args.nruns)
 
-    with Pool(n_parallel) as p:
-        results = p.map(_optimize, opt_data)
-    best_result = sorted(results, key=lambda x: x.score)[0]
+    with Pool(args.nruns) as p:
+        results = p.starmap(_optimize, zip(
+            seeds,
+            itertools.repeat(matrix.get_alphabet1()),
+            itertools.repeat(score_func),
+            itertools.repeat(space),
+            itertools.repeat(constraints),
+            itertools.repeat(args.nsteps), 
+            itertools.repeat(args.beta_start),
+            itertools.repeat(args.beta_end),
+            itertools.repeat(args.stepsize_start),
+            itertools.repeat(args.stepsize_end),
+        ))
+    best_result = min(results, key=lambda x: x.score)
 
     scores = np.array([result.scores for result in results])
     scores_mean = np.mean(scores, axis=0)
