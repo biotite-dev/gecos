@@ -166,9 +166,9 @@ class ColorOptimizer(object):
             score = self._score_func(coord)
         self._scores.append(score)
     
-    def optimize(self, n_steps=10000,
-                 beta_start=1e-7, beta_end=1e20,
-                 stepsize_start=10, stepsize_end=0.1):
+    def optimize(self, n_steps=20000,
+                 beta_start=1, beta_end=500,
+                 stepsize_start=10, stepsize_end=0.2):
         r"""
         Perform a Simulated Annealing optimization on the current
         coordinate to minimize the score returned by the score function.
