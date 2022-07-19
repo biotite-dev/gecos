@@ -173,12 +173,7 @@ an exponential schedule for the step size
 The step size is used for perturbing the current solution in each step of the
 SA algorithm to find a new candidate solution.
 So the idea for using the schedule here is to start with relatively large 
-step size :math:`\delta_{start}` and to chose the rate  according to an 
-target step size :math:`\delta_{end}`.
-An according rate is easily derived  by claiming
-:math:`\delta(N_{max})=\delta_{end}` which leads to
-
-.. math:: \gamma = \frac{1}{N_{max}}\log \left( \frac{\delta_{end}}{\delta_{start}} \right).
+step size and reduce it over the course of the simulation.
  
 
 Monte-Carlo algorithm

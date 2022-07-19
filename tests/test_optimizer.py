@@ -56,7 +56,7 @@ def test_optimization_score():
     score_func = gecos.DefaultScoreFunction(matrix)
     
     optimizer = gecos.ColorOptimizer(alphabet, score_func, space)
-    optimizer.optimize(N_STEPS, 1e-7, 1, 20, 0.1)
+    optimizer.optimize(N_STEPS)
     optimized_score = optimizer.get_result().score
 
     scores = []
@@ -75,8 +75,6 @@ def test_optimized_distances():
     Three symbols can always be arranged optimally, as long as no
     distance is larger than the combined other two distances.
     """
-    N_STEPS = 20000
-
     # Create alphabet with three symbols
     # and a toy substitution matrix for it
     alph = Alphabet(["A", "B", "C"])
@@ -97,7 +95,7 @@ def test_optimized_distances():
     np.random.seed(0)
     space = gecos.ColorSpace()
     optimizer = gecos.ColorOptimizer(alph, score_func, space)
-    optimizer.optimize(N_STEPS, 1e-7, 1, 20, 0.01)
+    optimizer.optimize()
     result = optimizer.get_result()
     optimized_coord = result.lab_colors
     optimized_score = result.score
@@ -137,11 +135,11 @@ def test_constraints(constraint_seed):
     )
     constraint_pos[~constraint_mask] = np.nan
 
-    np.random.seed(0)
+    np.random.seed(constraint_seed)
     space = gecos.ColorSpace()
     score_func = gecos.DefaultScoreFunction(matrix)
     optimizer = gecos.ColorOptimizer(alph, score_func, space, constraint_pos)
-    optimizer.optimize(N_STEPS, 1e-7, 1, 20, 0.01)
+    optimizer.optimize(N_STEPS)
     result = optimizer.get_result()
     opt_coord = result.lab_colors
 
